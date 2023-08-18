@@ -51,6 +51,7 @@
 #########################################
 
 from dwarfmidiutils.statebtn import StateBtn
+from dwarfmidiutils.longstatebtn import LongStateBtn
 from dwarfmidiutils.drumbtn import DrumBtn
 from dwarfmidiutils.notebasher import NoteBasher
 from dwarfmidiutils.pot import Pot
@@ -233,11 +234,11 @@ def barsPressed(id, state):
     global debugging
     if debugging: print(id,state)
     
-def midiModePressed(id, state):
+def midiModePressed(id, state, longpress):
     global gCurrMidiMode
     print("Midi Mode Pressed")
     gCurrMidiMode=state
-    print(id,state)
+    print(id,state,longpress)
     
 #reset - the toggling of volume and loop handled by midilearn
 #when in non-midilearn state, just switches off all loopsand fx
@@ -284,7 +285,7 @@ def pagerPressed(id, value):
         
     
 #EAST NORTH FOR ACOUSTIC GUITAR
-currUsbRelToHand = SOUTH
+currUsbRelToHand = NORTH
 #EDIT THESE DEPENDING ON ORIENTATION   
     
 
@@ -401,7 +402,7 @@ currKey=exkeys[0]
 #three midi modes - exclusive (only one fx at a time), yoked (as before, but turning on loop turns on corresponding fx)
 # and learn - when just getting the pedalboard to follow the commands
 MidiModeColors = [(255,255,0),(255,0,0),(0,0,255)]
-Controlz[exkeys[0]] = StateBtn(currKey, keys[exkeys[0]], None, midiModePressed, [0,1,2], MidiModeColors)
+Controlz[exkeys[0]] = LongStateBtn(currKey, keys[exkeys[0]], None, midiModePressed, [0,1,2], MidiModeColors)
 
 #volume off button
 currKey=exkeys[1]

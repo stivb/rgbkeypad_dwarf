@@ -4,7 +4,7 @@ from adafruit_midi.note_on import NoteOn
 from adafruit_midi.control_change import ControlChange
 from adafruit_midi.program_change import ProgramChange
 
-class StateBtn:
+class LongStateBtn:
 
     def __init__(self, nId, btn, midi, callback=None, states=None, colors=None, cmdVals=None, ctrlChangeChn=None):
         self.id = nId
@@ -37,7 +37,14 @@ class StateBtn:
  
     def check(self):
         if self.btn.pressed:
-            self.wasPressed()
+            if self.lastPressed==0:
+                self.lastPressed=time.monotonic()
+        else:
+            if self.lastPressed!=0:
+                pressDuration = time.monotonic()-self.lastPressed
+                self.lastPressed=0
+                self.press(pressDuration>1)
+        
     
     def setCtrlChangeChn(self,ctrlChangeChn):
         self.ctrlChangeChn=ctrlChangeChn
@@ -46,14 +53,13 @@ class StateBtn:
         if self.state==len(self.states):
             self.state=0
             
-    def wasPressed(self):
-        now = time.monotonic()
-        if now-self.lastPressed >.2 :
-            print("state button", self.id)
-            self.upState()
-            self.lastPressed=now
-            if self.callback!=None:
-                self.callback(self.id, self.state)
+    
+            
+    def press(self, lp):
+        print("state button", self.id, self.state, lp)
+        self.upState()
+        if self.callback!=None:
+            self.callback(self.id, self.state,lp)
    
     def upState(self):
         self.state+=1
