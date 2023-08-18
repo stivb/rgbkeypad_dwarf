@@ -116,52 +116,14 @@ MIDI_MODE_EXCL=0
 MIDI_MODE_YOKED=1
 MIDI_MODE_LEARN=2
 
-VOL_MODE_ON=1
-VOL_MODE_OFF=0
-
-SONG_MODE_ON=1
-SONG_MODE_OFF=1
-
-PAGE_SIZE=16
-PAGE_NUMBER=0
-PAGE_COUNT=3
-
 NORTH=0
 EAST=3
-SOUTH=9
+SOUTH=6
 WEST=9
 
 gCurrMidiMode=MIDI_MODE_EXCL
-gCurrVolMode=SONG_MODE_OFF
-gCurrSongMode=SONG_MODE_OFF
 
-currPage = PAGE_NUMBER
-
-#EAST NORTH FOR ACOUSTIC GUITAR
-currRpiSide = WEST
-currUsbRelToHand = SOUTH
-#EDIT THESE DEPENDING ON ORIENTATION
-
-
-
-
-
-
-
-        
-
-
-                
-
-                
-
-
-    
-       
-
-        
-        
-        
+      
 class Functions:
     
     def __init__(self):
@@ -321,51 +283,44 @@ def pagerPressed(id, value):
         settings.enactState()
         
     
+#EAST NORTH FOR ACOUSTIC GUITAR
+currUsbRelToHand = SOUTH
+#EDIT THESE DEPENDING ON ORIENTATION   
     
+
+
+if currUsbRelToHand==SOUTH:
+    drumkeys = [3,2,1,0]
+    loopkeys  = [15,7,6,5,4]
+    fxkeys = [11,10,9,8]
+    exkeys = [14,13,12] 
+    loopFxTethers = {7:11,6:10,5:9,4:8}
     
-        
-if currRpiSide==NORTH:
+if currUsbRelToHand==WEST:
+    drumkeys = [0,4,8,12]
+    loopkeys  = [3,1,5,9,13]
+    fxkeys = [2,6,10,14]
+    exkeys = [7,11,15] 
+    loopFxTethers = {1:2,5:6,9:10,13:14}
+    
+if currUsbRelToHand==NORTH:
+    drumkeys = [12,13,14,15]
+    loopkeys  = [0,8,9,10,11]
+    fxkeys = [4,5,6,7]
+    exkeys = [1,2,3] 
+    loopFxTethers = {8:4,9:5,10:6,11:7}
+    
+if currUsbRelToHand==EAST:
+    drumkeys = [15,11,7,3]
+    loopkeys  = [12,13,9,5,1]
+    fxkeys = [14,10,6,2]
+    exkeys = [8,4,0] 
+    loopFxTethers = {13:14,9:10,5:6,1:2}
 
-    if currUsbRelToHand==NORTH:
-        drumkeys = [12,13,14,15]
-        loopkeys  = [8,9,10,11]
-        fxkeys = [4,5,6,7]
-        exkeys = [0,1,2,3]
-        gmDrums = [36,40,44,48]
-        
-    if currUsbRelToHand==WEST:
-        drumkeys = [0,4,8,12]
-        loopkeys  = [2,6,10,14]
-        fxkeys= [1,5,9,13]
-        exkeys = [3,7,11,15]
-        gmDrums = [36,40,44,48]
+    
 
-    if currUsbRelToHand==SOUTH:
-        drumkeys = [3,2,1,0]
-        loopkeys = [7,6,5,4]
-        fxkeys = [11,10,9,8]
-        exkeys = [3,7,11,15]
-        gmDrums = [48,44,30,36]
-
-    if currUsbRelToHand==EAST:
-        drumkeys = [15,11,7,3]
-        loopkeys  = [14,10,6,2]
-        fxkeys= [13,9,5,1]
-        exkeys = [12,8,4,0]
-        gmDrums = [48,44,30,36]
-
-if currRpiSide==WEST:
-
-    if currUsbRelToHand==SOUTH:
-        drumkeys = [3,2,1,0]
-        loopkeys  = [15,7,6,5,4]
-        fxkeys = [11,10,9,8]
-        exkeys = [14,13,12]
-        gmDrums = [36,40,44,48]
-        loopFxTethers = {7:11,6:10,5:9,4:8}
-        print (drumkeys)
-
-
+print(drumkeys)
+print(currUsbRelToHand)
 
 #footPedalPins = [board.GP20,board.GP21]
 #analoguePins = [board.A0,board.A1]

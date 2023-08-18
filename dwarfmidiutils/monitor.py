@@ -1,3 +1,17 @@
+#spi = busio.SPI(clock=board.GP10, MOSI=board.GP11)
+#cs = digitalio.DigitalInOut(board.GP13)
+#cs.direction = digitalio.Direction.OUTPUT
+#leds = bcddigits.BCDDigits(spi, cs, nDigits=8)
+
+#setting up external foot buttons
+
+
+#setting up external potentiometers
+#analog_A = AnalogIn(board.A0)
+#analog_B = AnalogIn(board.A1)
+#analog_C = AnalogIn(board.A2)
+
+
 import displayio
 from adafruit_display_text import label, wrap_text_to_lines
 from adafruit_st7789 import ST7789

@@ -27,6 +27,8 @@ class DrumBtn:
             self.wasPressed()
   
     def wasPressed(self):
+        print(self.id)
+        print(self.btn)
         now = time.monotonic()
         if now-self.lastPressed > self.debounce :
             self.noteOn()
