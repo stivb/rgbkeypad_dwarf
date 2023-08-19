@@ -75,3 +75,4 @@ class StateBtn:
         self.btn.set_led(*self.colors[self.state])
         if self.midi==None: return
         self.midi.send(ControlChange(self.id+40, self.cmdVals[self.state]))
+    

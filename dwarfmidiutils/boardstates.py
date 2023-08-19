@@ -3,9 +3,10 @@ import time
 class BoardState:
     
     def __init__(self, fx=-1, loops=None):
-        self.id=nId
         self.fx = fx
         self.loops = loops
+        print(self.fx)
+        print(self.loops)
         
     def setFx(self, fx):
         self.fx = fx
@@ -24,7 +25,7 @@ class BoardStates:
         if pos>=len(self.states): return
         self.states[pos] = state
         
-    def nextState(self)
+    def nextState(self):
         currState = self.pos
         filteredList = list(filter(lambda item: item is not None, self.states))
         self.pos = self.pos+1
@@ -33,7 +34,7 @@ class BoardStates:
         if self.pos!=currState:
             self.callback(self.states[self.pos])
           
-    def prevState(self)
+    def prevState(self):
         currState = self.pos
         filteredList = list(filter(lambda item: item is not None, self.states))
         self.pos = self.pos-1

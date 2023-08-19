@@ -61,6 +61,8 @@ from dwarfmidiutils.joystick import JoyStick
 from dwarfmidiutils.midireader import MidiReader
 from dwarfmidiutils.monitor import Monitor
 from dwarfmidiutils.settings import Settings
+from dwarfmidiutils.boardstates import BoardState
+from dwarfmidiutils.boardstates import BoardStates
 
 import json
 import board
@@ -183,6 +185,13 @@ midi2 = adafruit_midi.MIDI(midi_out=usb_midi.ports[1], out_channel=10)
 note = 60
 velocity = 127
 
+def boardCapture():
+    #fxBtns = (map((lambda keyNum: Controlz[keyNum]), fxKeys))
+    activeFx = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), fxkeys))[0]
+    activeLoops = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), loopkeys))
+    capture = BoardState(activeFx,activeLoops)
+    
+
 def drumBtnPressed(ctrlId,when):
     global drumNotesPlayed
     #notewhen = {"ctrlId":ctrlId, "when":when}
@@ -237,8 +246,9 @@ def barsPressed(id, state):
 def midiModePressed(id, state, longpress):
     global gCurrMidiMode
     print("Midi Mode Pressed")
-    gCurrMidiMode=state
+    #gCurrMidiMode=state
     print(id,state,longpress)
+    boardCapture()
     
 #reset - the toggling of volume and loop handled by midilearn
 #when in non-midilearn state, just switches off all loopsand fx
