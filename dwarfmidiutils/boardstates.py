@@ -21,25 +21,31 @@ class BoardStates:
         self.pos = 0
         self.callback = callback
         
-    def setStateAt(self, state,pos):
-        if pos>=len(self.states): return
-        self.states[pos] = state
+    def setState(self, state):        
+        self.states[self.pos] = state
+        self.pos = self.pos+1
+        if self.pos>=len(self.states):
+            self.pos=0
+        self.callback(self.states[self.pos],False)
+        self.status()
+            
+    def gotoState(self,pos):
+        if self.pos==pos: return
+        currState = self.pos
+        filteredList = list(filter(lambda item: item is not None, self.states))
+        if pos >=len(filteredList):
+            self.pos=0
+        else:self.pos=pos
+        self.callback(self.states[self.pos],True)
+        self.status()
         
     def nextState(self):
-        currState = self.pos
-        filteredList = list(filter(lambda item: item is not None, self.states))
-        self.pos = self.pos+1
-        if self.pos >=len(filteredList):
-            self.pos=0
-        if self.pos!=currState:
-            self.callback(self.states[self.pos])
+        self.gotoState(self.pos+1)
           
     def prevState(self):
-        currState = self.pos
+        self.gotoState(self.pos-1)
+        
+    def status(self):
         filteredList = list(filter(lambda item: item is not None, self.states))
-        self.pos = self.pos-1
-        if self.pos <=0:
-            self.pos=len(filteredList)-1
-        if self.pos!=currState:
-            self.callback(self.states[self.pos])
+        print ("self.pos is ", self.pos, " out of ", len(filteredList), " populated items")
         

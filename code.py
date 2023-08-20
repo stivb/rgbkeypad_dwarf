@@ -61,8 +61,7 @@ from dwarfmidiutils.joystick import JoyStick
 from dwarfmidiutils.midireader import MidiReader
 from dwarfmidiutils.monitor import Monitor
 from dwarfmidiutils.settings import Settings
-from dwarfmidiutils.boardstates import BoardState
-from dwarfmidiutils.boardstates import BoardStates
+from dwarfmidiutils.boardstates import BoardState,BoardStates
 
 import json
 import board
@@ -185,11 +184,8 @@ midi2 = adafruit_midi.MIDI(midi_out=usb_midi.ports[1], out_channel=10)
 note = 60
 velocity = 127
 
-def boardCapture():
-    #fxBtns = (map((lambda keyNum: Controlz[keyNum]), fxKeys))
-    activeFx = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), fxkeys))[0]
-    activeLoops = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), loopkeys))
-    capture = BoardState(activeFx,activeLoops)
+
+    
     
 
 def drumBtnPressed(ctrlId,when):
@@ -243,12 +239,8 @@ def barsPressed(id, state):
     global debugging
     if debugging: print(id,state)
     
-def midiModePressed(id, state, longpress):
-    global gCurrMidiMode
-    print("Midi Mode Pressed")
-    #gCurrMidiMode=state
-    print(id,state,longpress)
-    boardCapture()
+
+        
     
 #reset - the toggling of volume and loop handled by midilearn
 #when in non-midilearn state, just switches off all loopsand fx
@@ -293,45 +285,61 @@ def pagerPressed(id, value):
     if value==0:
         settings.enactState()
         
+def boardStatePressed(id, state, longpress):
+    print("boardStatePressed")
+    global boardStates
+    if longpress:
+        boardStates.setState(boardCapture())
+    else:
+        boardStates.nextState()
+
+def boardStateUpdated(aBoardState,justNav=True):
+    print("Navigation", justNav)
+    print(aBoardState)
     
-#EAST NORTH FOR ACOUSTIC GUITAR
-currUsbRelToHand = NORTH
-#EDIT THESE DEPENDING ON ORIENTATION   
+def boardCapture():
+    #fxBtns = (map((lambda keyNum: Controlz[keyNum]), fxKeys))
+    activeFx = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), fxkeys))[0]
+    activeLoops = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), loopkeys))
+    return BoardState(activeFx,activeLoops)
+
+boardStates = BoardStates(boardStateUpdated)
+
     
 
+keysSouth = {"Drum1":3,"Drum2":2,"Drum3":1,"Drum4":0,
+             "Loop1":15,"Loop2":7,"Loop3":6,"Loop4":5,"Loop5":4,
+             "Fx1":11,"Fx2":10,"Fx3":9,"Fx4":8,
+             "Ex1":14,"Ex2":13,"Ex3":12}
+keysWest = {"Drum1":0,"Drum2":4,"Drum3":8,"Drum4":12,
+             "Loop1":3,"Loop2":1,"Loop3":5,"Loop4":9,"Loop5":13,
+             "Fx1":2,"Fx2":6,"Fx3":10,"Fx4":14,
+             "Ex1":7,"Ex2":11,"Ex3":15}
+keysNorth = {"Drum1":12,"Drum2":13,"Drum3":14,"Drum4":15,
+             "Loop1":0,"Loop2":8,"Loop3":9,"Loop4":10,"Loop5":11,
+             "Fx1":4,"Fx2":5,"Fx3":6,"Fx4":7,
+             "Ex1":1,"Ex2":2,"Ex3":3}
+keysEast =  {"Drum1":15,"Drum2":11,"Drum3":7,"Drum4":3,
+             "Loop1":12,"Loop2":13,"Loop3":9,"Loop4":5,"Loop5":1,
+             "Fx1":14,"Fx2":10,"Fx3":6,"Fx4":2,
+             "Ex1":8,"Ex2":4,"Ex3":0}
+    
+ks = keysNorth
+ksInv = {v: k for k, v in ks.items()}
 
-if currUsbRelToHand==SOUTH:
-    drumkeys = [3,2,1,0]
-    loopkeys  = [15,7,6,5,4]
-    fxkeys = [11,10,9,8]
-    exkeys = [14,13,12] 
-    loopFxTethers = {7:11,6:10,5:9,4:8}
-    
-if currUsbRelToHand==WEST:
-    drumkeys = [0,4,8,12]
-    loopkeys  = [3,1,5,9,13]
-    fxkeys = [2,6,10,14]
-    exkeys = [7,11,15] 
-    loopFxTethers = {1:2,5:6,9:10,13:14}
-    
-if currUsbRelToHand==NORTH:
-    drumkeys = [12,13,14,15]
-    loopkeys  = [0,8,9,10,11]
-    fxkeys = [4,5,6,7]
-    exkeys = [1,2,3] 
-    loopFxTethers = {8:4,9:5,10:6,11:7}
-    
-if currUsbRelToHand==EAST:
-    drumkeys = [15,11,7,3]
-    loopkeys  = [12,13,9,5,1]
-    fxkeys = [14,10,6,2]
-    exkeys = [8,4,0] 
-    loopFxTethers = {13:14,9:10,5:6,1:2}
+drumkeys = [ks["Drum1"],ks["Drum2"],ks["Drum3"],ks["Drum4"]]
+loopkeys  = [ks["Loop1"],ks["Loop2"],ks["Loop3"],ks["Loop4"],ks["Loop5"]]
+fxkeys = [ks["Fx1"],ks["Fx2"],ks["Fx3"],ks["Fx4"]]
+exkeys = [ks["Ex1"],ks["Ex2"],ks["Ex3"]]
+loopFxTethers = {ks["Loop2"]:ks["Fx1"],ks["Loop3"]:ks["Fx2"],ks["Loop4"]:ks["Fx3"],ks["Loop5"]:ks["Fx4"]}
+
+
+
+
 
     
 
 print(drumkeys)
-print(currUsbRelToHand)
 
 #footPedalPins = [board.GP20,board.GP21]
 #analoguePins = [board.A0,board.A1]
@@ -412,7 +420,7 @@ currKey=exkeys[0]
 #three midi modes - exclusive (only one fx at a time), yoked (as before, but turning on loop turns on corresponding fx)
 # and learn - when just getting the pedalboard to follow the commands
 MidiModeColors = [(255,255,0),(255,0,0),(0,0,255)]
-Controlz[exkeys[0]] = LongStateBtn(currKey, keys[exkeys[0]], None, midiModePressed, [0,1,2], MidiModeColors)
+Controlz[exkeys[0]] = LongStateBtn(currKey, keys[exkeys[0]], None, boardStatePressed, [0,1,2], MidiModeColors)
 
 #volume off button
 currKey=exkeys[1]
