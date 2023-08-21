@@ -292,10 +292,30 @@ def boardStatePressed(id, state, longpress):
         boardStates.setState(boardCapture())
     else:
         boardStates.nextState()
+        
+def setAndEnactBoardState():
+    currBoardState = boardCapture()
+    nextBoardState = boardStates.getState()
+    currBoardState.status()
+    nextBoardState.status()
+    if currBoardState.fx!=nextBoardState.fx:
+        Controlz[nextBoardState.fx].wasPressed()
+    currBoardLoops = set(currBoardState.loops)
+    nextBoardLoops = set(nextBoardState.loops)
+    turnOffs = currBoardLoops-nextBoardLoops
+    turnOns = nextBoardLoops-currBoardLoops
+    for turnOff in turnOffs:
+        Controlz[turnOff].wasPressed()
+    for turnOn in turnOns:
+        Controlz[turnOn].wasPressed()
+    
+    
 
 def boardStateUpdated(aBoardState,justNav=True):
     print("Navigation", justNav)
     print(aBoardState)
+    if justNav:
+        setAndEnactBoardState()
     
 def boardCapture():
     #fxBtns = (map((lambda keyNum: Controlz[keyNum]), fxKeys))

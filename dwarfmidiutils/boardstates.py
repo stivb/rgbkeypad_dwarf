@@ -5,14 +5,18 @@ class BoardState:
     def __init__(self, fx=-1, loops=None):
         self.fx = fx
         self.loops = loops
-        print(self.fx)
-        print(self.loops)
+        self.status()
         
     def setFx(self, fx):
         self.fx = fx
         
     def setLoops(self, loops):
         self.loops = loops
+        
+    def status(self):
+        print(self.fx)
+        print(self.loops)
+    
         
 class BoardStates:
     
@@ -44,6 +48,9 @@ class BoardStates:
           
     def prevState(self):
         self.gotoState(self.pos-1)
+        
+    def getState(self):
+        return self.states[self.pos]
         
     def status(self):
         filteredList = list(filter(lambda item: item is not None, self.states))
