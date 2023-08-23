@@ -1,0 +1,129 @@
+{
+  "pages": [
+    {
+      "title": "Default Channel",
+      "function": "debug",
+      "settings": [
+        {
+          "key": "Choose Channel",
+          "value": 0,
+          "min": 0,
+          "max": 15,
+          "inc": 1,
+          "bigInc": 1,
+          "notify": false,
+          "function": "SettingsChooseChannel"
+        }
+      ]
+    },
+    {
+      "title": "Board Navigation",
+      "function": "SettingsGoBoardSnapshot",
+      "settings": [
+        {
+          "key": "Go To Board",
+          "value": 0,
+          "min": 0,
+          "max": 15,
+          "inc": 1,
+          "bigInc": 1,
+          "notify": false,
+          "function": "parent"
+        },
+        {
+          "key": "Go To Snapshot",
+          "value": 0,
+          "min": 0,
+          "max": 15,
+          "inc": 1,
+          "bigInc": 1,
+          "notify": false,
+          "function": "parent"
+        },
+		{
+          "key": "Board Channel",
+          "value": 15,
+          "min": 0,
+          "max": 15,
+          "inc": 1,
+          "bigInc": 1,
+          "notify": false,
+          "function": "SettingsSetBoardChannel"
+        },
+		{
+          "key": "Snapshot Channel",
+          "value": 14,
+          "min": 0,
+          "max": 15,
+          "inc": 1,
+          "bigInc": 1,
+          "notify": false,
+          "function": "SettingsSetSnapshotChannel"
+        }
+		
+      ]
+    },
+	{
+      "title": "Send CC Num/Val",
+      "function": "SettingsSendCCNumVal",
+      "settings": [
+        {
+          "key": "Choose CC Number",
+          "value": 0,
+          "min": 0,
+          "max": 127,
+          "inc": 1,
+          "bigInc": 3,
+          "notify": false,
+          "function": "parent"
+        },
+		{
+          "key": "Choose CC Value",
+          "value": 0,
+          "min": 0,
+          "max": 127,
+          "inc": 1,
+          "bigInc": 3,
+          "notify": false,
+          "function": "parent"
+        }
+      ]
+    },
+	{
+      "title": "Tempo and Beats",
+      "function": "debug",
+      "settings": [
+        {
+          "key": "Beats Per Minute",
+          "value": 120,
+          "min": 53,
+          "max": 180,
+          "inc": 1,
+          "bigInc": 1,
+          "notify": false,
+          "function": "SettingsBpm"
+        },
+		{
+          "key": "Beats Per Bar",
+          "value": 4,
+          "min": 2,
+          "max": 16,
+          "inc": 1,
+          "bigInc": 1,
+          "notify": false,
+          "function": "SettingsBpb"
+        }
+        ]
+        },
+        {
+      "title": "Lyrics",
+      "function": "lyrics",
+      "content": [
+        {
+          "key": "Verse 1",
+          "value": "Let us go then you and I\nAs the evening is spread out against the sky\nLike a patient etherized upon a table"
+        }
+      ]
+    }
+  ]
+}
