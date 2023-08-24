@@ -62,6 +62,7 @@ from dwarfmidiutils.midireader import MidiReader
 from dwarfmidiutils.monitor import Monitor
 from dwarfmidiutils.settings import Settings
 from dwarfmidiutils.boardstates import BoardState,BoardStates
+from dwarfmidiutils.statemap import StateMapItem, StateMap
 
 import json
 import board
@@ -122,6 +123,12 @@ NORTH=0
 EAST=3
 SOUTH=6
 WEST=9
+
+colz = {"RED":(255,0,0),"GREEN":(0,255,0),"BLUE":(0,0,255),
+"CYAN":(0,255,255),"VIOLET":(255,0,255),"YELLOW":(255,255,0),
+"TEAL":(0,128,128),"PURPLE":(128,0,128),"OLIVE":(128,128,0),
+"MAROON";(128,0,0),"LIGHTGREEN":(0,128,0),"NAVY":(0,0,128)
+"GRAY":(128,128,128)}
 
 gCurrMidiMode=MIDI_MODE_EXCL
 
@@ -213,7 +220,7 @@ def doNotesOff():
             del drumNotesPlayed[i]
             
  
-def stateBtnPressed(id, state): #turning off all the other fx but not the one just turned on
+def fxBtnPressed(id, state): #turning off all the other fx but not the one just turned on
     global fxkeys
     if gCurrMidiMode==MIDI_MODE_EXCL or gCurrMidiMode==MIDI_MODE_YOKED:
         if id in fxkeys:
@@ -260,9 +267,6 @@ def resetPressed(id, state):
     if state==1:
         Controlz[exkeys[1]].setState(state);
 
-def soundFadePressed(id, state):
-    global debugging
-    if debugging: print("Sound Fade Pressed")
     
 def drumPadPressed(id, value):
     global debugging
@@ -364,7 +368,7 @@ print(drumkeys)
 #footPedalPins = [board.GP20,board.GP21]
 #analoguePins = [board.A0,board.A1]
 
-gmDrums = [36,37,38,39]
+
 
 #utility singleton classes
 noteBasher = NoteBasher(midi1, 100, .1)
@@ -373,21 +377,51 @@ midiReader = MidiReader(midi1)
 
 Controlz = {}
 ct=0
+gmDrums = [36,37,38,39]
 for keynum in drumkeys:
-    Controlz[keynum]=DrumBtn(keynum, keys[keynum], midi1, gmDrums[ct], .2, drumPadPressed)
+    Controlz[ct]=DrumBtn(keynum, keys[keynum], midi1, [gmDrums[ct]], .2, drumPadPressed)
     ct=ct+1
     
 for keynum in fxkeys:
-    Controlz[keynum]=StateBtn(keynum, keys[keynum], midi1,stateBtnPressed,[0,0],[(128,128,128),(255,0,0)])
+    fxKeyStatemap = [BoardStateItem("FxOn".ct-4, colz["GREEN"], 40+ct, 1 ),
+                     BoardStateItem("FxOff".ct-4, colz["RED"], 40+ct, 96 )]
+    Controlz[ct]=LongStateBtn(40+ct, keys[keynum], midi1,fxKeyStateMap, fxBtnPressed)
     ct=ct+1
     
 for keynum in loopkeys:
-    Controlz[keynum]=StateBtn(keynum, keys[keynum], midi1, stateBtnPressed,[0,0],[(0,0,255),(255,0,0)])
+    loopKeyStatemap = [BoardStateItem("LoopOn".ct-8, colz["GREEN"], 50+ct, 1 ),
+                     BoardStateItem("LoopOff".ct-8, colz["RED"], 50+ct, 96 )]
+    Controlz[ct]=LongStateBtn(50+ct, keys[keynum], midi1,fxKeyStateMap, None)
     ct=ct+1
-    
 
+#button to either navigate between boardStates or to save a current boardState
+
+boardStatesBtnMap = [BoardStateItem("Board1", colz["RED"], None, None ),
+                     BoardStateItem("Board2", colz["YELLOW"], None, None ),
+                     BoardStateItem("Board3", colz["GREEN"], None, None )
+                     BoardStateItem("Board4", colz["BLUE"], None, None )]
+
+
+Controlz[ct] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, boardStatesBtnMap, boardStatePressed)
+ct+=1
+songSelectionBtnMap =  [BoardStateItem("Song".i, x, None, None) for i,x in enumerate(colz.values())] 
+
+#song selection
+Controlz[ct] = StateBtn(exkeys[1], keys[exkeys[1]], None,  songSelectionBtnMap, songChosen)
+ct+=1
+#reset button (also does volume on/off)
+
+resetBtnMap =       [BoardStateItem("Off", colz["RED"], 60, 96 ),
+                     BoardStateItem("Playing", colz["GREEN"], 61, 96 ),
+                     BoardStateItem("Fadeout", colz["YELLOW"], 60, 1 )]
+
+
+
+Controlz[ct] = StateBtn(exkeys[2], keys[exkeys[2]], midi1, resetPressed)
     
-ctrlCt=16  #
+ct+=1
+    
+ #
 # for footPedalPin in footPedalPins:
 #     Controlz[ctrlCt] = FootSwitch(midi1, ctrlCt, footPedalPin, footPedalPressed)
 #     ctrlCt+=1
@@ -396,16 +430,16 @@ ctrlCt=16  #
 #     Controlz[ctrlCt] = Pot(midi1, ctrlCt, aPin, potMoved)
 #     ctrlCt+=1
     
-drumPad = AnKeyPad(midi1, ctrlCt, board.A2, drumPadPressed)
+drumPad = AnKeyPad(midi1, ct, board.A2, drumPadPressed)
+Controlz[ct] = drumPad
+ct+=1
 #pagerPad = AnKeyPad(midi1, ctrlCt, board.A1, pagerPressed)
 
 #pagerPad.set_notches([36,64,87,110,126],[0,1,2,4,3])
 
-joyController = JoyStick(midi1,ctrlCt+1, board.A1, board.A0, board.GP22, joyStickAction)
+joyController = JoyStick(midi1,ct, board.A1, board.A0, board.GP22, joyStickAction)
+Controlz[ct] = joyController
 
-Controlz[ctrlCt] = drumPad
-Controlz[ctrlCt+1] = joyController
-#Controlz[ctrlCt+1] = pagerPad
 
 
                   
@@ -426,29 +460,9 @@ Controlz[ctrlCt+1] = joyController
 # settings = Settings("settings.json",funcs,monitor)
 
 
-# bars button
-rgbs = [(255,0,0),(0,255,0),(0,0,255),(255,255,0),(255,0,255),(255,255,255)]
-cmdVals = [4,12,28,60,96,127]
-states=[0,1,2,3,4,5]
-currKey=exkeys[0]
-#Controlz[currKey] = StateBtn(currKey, keys[currKey], midi1, barsPressed, states, rgbs, cmdVals)
 
-#midi mode button
-#def __init__(self, nId, btn, midi, callback=None, states=None, colors=None, cmdVals=None, ctrlChangeChn=None):
-#currKey=exkeys[1]
 
-#three midi modes - exclusive (only one fx at a time), yoked (as before, but turning on loop turns on corresponding fx)
-# and learn - when just getting the pedalboard to follow the commands
-MidiModeColors = [(255,255,0),(255,0,0),(0,0,255)]
-Controlz[exkeys[0]] = LongStateBtn(currKey, keys[exkeys[0]], None, boardStatePressed, [0,1,2], MidiModeColors)
 
-#volume off button
-currKey=exkeys[1]
-Controlz[exkeys[1]] = StateBtn(currKey, keys[exkeys[1]], midi1, soundFadePressed)
-
-#reset button (also does volume on/off)
-currKey=exkeys[2]
-Controlz[exkeys[2]] = StateBtn(currKey, keys[exkeys[2]], midi1, resetPressed)
 
 
 
