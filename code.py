@@ -88,6 +88,8 @@ from adafruit_midi.note_on import NoteOn
 from adafruit_midi.control_change import ControlChange
 from adafruit_midi.program_change import ProgramChange
 
+from collections import OrderedDict
+
 
 
 keybow = PMK(Hardware())
@@ -220,18 +222,12 @@ def doNotesOff():
  
 def fxBtnPressed(id, state, lp): #turning off all the other fx but not the one just turned on
     global fxkeys,ks
-    print(id,state,lp)
-    if gCurrMidiMode==MIDI_MODE_EXCL or gCurrMidiMode==MIDI_MODE_YOKED:
-        if id in fxkeys:
-            for fxkey in fxkeys:
-                print(fxkey,state)
-                if fxkey!=id and state==1:
-                    Controlz[fxkey].setState(0)
-    if gCurrMidiMode==MIDI_MODE_YOKED and state==1:
-        if id in loopkeys:
-            for fxkey in fxkeys:
-                Controlz[fxkey].setState(0)
-            Controlz[loopFxTethers[id]].setState(1)
+    print(id, "is id of button just pressed in state ", state," with long press? ", lp, "with the other keys being ", fxkeys)
+    for fxkey in fxkeys:
+        print("currently the fxkey ", fxkey," has the state ",Controlz[fxkey].getState())
+        if fxkey!=id and state==1:
+            Controlz[fxkey].setState(0)
+
             
     
 def footPedalPressed(id, state):
@@ -321,7 +317,7 @@ def boardStateUpdated(aBoardState,justNav=True):
     if justNav:
         setAndEnactBoardState()
         
-def songChosenPressed():
+def songSelectionPressed(id, state, longpress):
     print("Song chosen")
     
 def boardCapture():
@@ -361,7 +357,7 @@ exkeys = [ks["Ex1"],ks["Ex2"],ks["Ex3"]]
 loopFxTethers = {ks["Loop2"]:ks["Fx1"],ks["Loop3"]:ks["Fx2"],ks["Loop4"]:ks["Fx3"],ks["Loop5"]:ks["Fx4"]}
 
 
-print(drumkeys)
+print ("loop keys ", loopkeys, " fx keys:", fxkeys)
 
 #footPedalPins = [board.GP20,board.GP21]
 #analoguePins = [board.A0,board.A1]
@@ -375,24 +371,26 @@ Controlz = {}
 ct=0
 gmDrums = [36,37,38,39]
 for keynum in drumkeys:
-    Controlz[ct]=DrumBtn(keynum, keys[keynum], midi1, gmDrums[ct], .2, drumPadPressed)
+    Controlz[keynum]=DrumBtn(keynum, keys[keynum], midi1, gmDrums[ct], .2, drumPadPressed)
     ct=ct+1
     print(keynum)
     
 for keynum in fxkeys:
     fxKeyStateMap = StateMap([
-                             StateMapItem("FxOn", colz["GREEN"], (ct+40), 1 ),
-                             StateMapItem("FxOff", colz["RED"], (ct+40), 96 )
+                             StateMapItem("FxOff", colz["RED"], (ct+40), 96 ),
+                             StateMapItem("FxOn", colz["GREEN"], (ct+40), 1 )
                              ]
                              )
-    Controlz[ct]=LongStateBtn(keynum, keys[keynum], midi1,fxKeyStateMap, fxBtnPressed)
+    Controlz[keynum]=LongStateBtn(keynum, keys[keynum], midi1,fxKeyStateMap, fxBtnPressed)
     ct=ct+1
     print(keynum)
     
 for keynum in loopkeys:
-    loopKeyStateMap = StateMap([StateMapItem("LoopOn", colz["GREEN"], (ct+50), 1 ),
-                     StateMapItem("LoopOff", colz["RED"], (ct+50), 96 )])
-    Controlz[ct]=LongStateBtn(keynum, keys[keynum], midi1,loopKeyStateMap, None)
+    loopKeyStateMap = StateMap([
+                               StateMapItem("LoopOn", colz["RED"], (ct+50), 96 ),
+                               StateMapItem("LoopOff", colz["GREEN"], (ct+50), 1)
+                               ])
+    Controlz[keynum]=LongStateBtn(keynum, keys[keynum], midi1,loopKeyStateMap, None)
     ct=ct+1
     print(keynum)
 
@@ -406,14 +404,15 @@ boardStatesBtnMap = StateMap(
                              ]
                             )
 
+Controlz[exkeys[0]] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, boardStatesBtnMap, boardStatePressed)
 
-Controlz[ct] = LongStateBtn(keynum, keys[exkeys[0]], None, boardStatesBtnMap, boardStatePressed)
-ct+=1
-songSelectionBtnMap =  StateMap([StateMapItem("Song", x, None, None) for i,x in enumerate(colz.values())])
+songSelectionBtnMap =  StateMap([StateMapItem("Song", x, None, None) for i,x in enumerate(list(colz.values()))])
+print(list(colz.values()))
+print(songSelectionBtnMap.allCols())
 
 #song selection
-Controlz[ct] = LongStateBtn(keynum, keys[exkeys[1]], None,  songSelectionBtnMap, songChosenPressed)
-ct+=1
+Controlz[exkeys[1]] = LongStateBtn(exkeys[1], keys[exkeys[1]], None,  songSelectionBtnMap, songSelectionPressed)
+
 #reset button (also does volume on/off)
 
 resetBtnMap =        StateMap([StateMapItem("Off", colz["RED"], 60, 96 ),
@@ -422,9 +421,8 @@ resetBtnMap =        StateMap([StateMapItem("Off", colz["RED"], 60, 96 ),
 
 
 
-Controlz[ct] = LongStateBtn(keynum, keys[exkeys[2]], midi1, resetBtnMap, resetPressed)
+Controlz[exkeys[2]] = LongStateBtn(exkeys[2], keys[exkeys[2]], midi1, resetBtnMap, resetPressed)
     
-ct+=1
     
  #
 # for footPedalPin in footPedalPins:
@@ -434,6 +432,8 @@ ct+=1
 # for aPin in analoguePins:
 #     Controlz[ctrlCt] = Pot(midi1, ctrlCt, aPin, potMoved)
 #     ctrlCt+=1
+
+ct=16
     
 drumPad = AnKeyPad(midi1, ct, board.A2, drumPadPressed)
 Controlz[ct] = drumPad

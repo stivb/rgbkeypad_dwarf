@@ -48,10 +48,13 @@ class LongStateBtn:
         self.enactState()
         
     def getState(self):
+        print("Sourcing the state of button ", self.id)
         return self.stateMap.pos
     
-    def enactState(self):      
-        if self.adaMidi==None: return
-        if self.stateMap.currMidiCmd()==None: return
+    def enactState(self):
+        print(self.adaMidi, self.stateMap.currMidiCmd())
         self.btn.set_led(*self.stateMap.currCol())
+        print(*self.stateMap.currCol())
+        if self.adaMidi==None: return
+        if self.stateMap.currMidiCmd()==None: return        
         self.adaMidi.send(self.stateMap.currMidiCmd())
