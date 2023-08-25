@@ -1,8 +1,6 @@
 import time
-from adafruit_midi.note_off import NoteOff
-from adafruit_midi.note_on import NoteOn
 from adafruit_midi.control_change import ControlChange
-from adafruit_midi.program_change import ProgramChange
+
 
 class StateBtn:
 

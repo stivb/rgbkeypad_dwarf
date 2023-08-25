@@ -62,7 +62,7 @@ from dwarfmidiutils.midireader import MidiReader
 from dwarfmidiutils.monitor import Monitor
 from dwarfmidiutils.settings import Settings
 from dwarfmidiutils.boardstates import BoardState,BoardStates
-from dwarfmidiutils.statemap import StateMapItem, StateMap
+from dwarfmidiutils.statemap import *
 
 import json
 import board
@@ -127,7 +127,7 @@ WEST=9
 colz = {"RED":(255,0,0),"GREEN":(0,255,0),"BLUE":(0,0,255),
 "CYAN":(0,255,255),"VIOLET":(255,0,255),"YELLOW":(255,255,0),
 "TEAL":(0,128,128),"PURPLE":(128,0,128),"OLIVE":(128,128,0),
-"MAROON";(128,0,0),"LIGHTGREEN":(0,128,0),"NAVY":(0,0,128)
+"MAROON":(128,0,0),"LIGHTGREEN":(0,128,0),"NAVY":(0,0,128),
 "GRAY":(128,128,128)}
 
 gCurrMidiMode=MIDI_MODE_EXCL
@@ -197,8 +197,6 @@ velocity = 127
 
 def drumBtnPressed(ctrlId,when):
     global drumNotesPlayed
-    #notewhen = {"ctrlId":ctrlId, "when":when}
-    #drumNotesPlayed.append(notewhen)
     print ("Note played from button ", ctrlId)
     
 def joyStickAction(degreeV,degreeH,actioned):
@@ -220,11 +218,13 @@ def doNotesOff():
             del drumNotesPlayed[i]
             
  
-def fxBtnPressed(id, state): #turning off all the other fx but not the one just turned on
-    global fxkeys
+def fxBtnPressed(id, state, lp): #turning off all the other fx but not the one just turned on
+    global fxkeys,ks
+    print(id,state,lp)
     if gCurrMidiMode==MIDI_MODE_EXCL or gCurrMidiMode==MIDI_MODE_YOKED:
         if id in fxkeys:
             for fxkey in fxkeys:
+                print(fxkey,state)
                 if fxkey!=id and state==1:
                     Controlz[fxkey].setState(0)
     if gCurrMidiMode==MIDI_MODE_YOKED and state==1:
@@ -320,6 +320,9 @@ def boardStateUpdated(aBoardState,justNav=True):
     print(aBoardState)
     if justNav:
         setAndEnactBoardState()
+        
+def songChosenPressed():
+    print("Song chosen")
     
 def boardCapture():
     #fxBtns = (map((lambda keyNum: Controlz[keyNum]), fxKeys))
@@ -327,7 +330,7 @@ def boardCapture():
     activeLoops = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), loopkeys))
     return BoardState(activeFx,activeLoops)
 
-boardStates = BoardStates(boardStateUpdated)
+boardStates = BoardStates(boardStateUpdated, boardStateUpdated)
 
     
 
@@ -348,7 +351,7 @@ keysEast =  {"Drum1":15,"Drum2":11,"Drum3":7,"Drum4":3,
              "Fx1":14,"Fx2":10,"Fx3":6,"Fx4":2,
              "Ex1":8,"Ex2":4,"Ex3":0}
     
-ks = keysNorth
+ks = keysSouth
 ksInv = {v: k for k, v in ks.items()}
 
 drumkeys = [ks["Drum1"],ks["Drum2"],ks["Drum3"],ks["Drum4"]]
@@ -358,17 +361,10 @@ exkeys = [ks["Ex1"],ks["Ex2"],ks["Ex3"]]
 loopFxTethers = {ks["Loop2"]:ks["Fx1"],ks["Loop3"]:ks["Fx2"],ks["Loop4"]:ks["Fx3"],ks["Loop5"]:ks["Fx4"]}
 
 
-
-
-
-    
-
 print(drumkeys)
 
 #footPedalPins = [board.GP20,board.GP21]
 #analoguePins = [board.A0,board.A1]
-
-
 
 #utility singleton classes
 noteBasher = NoteBasher(midi1, 100, .1)
@@ -379,45 +375,54 @@ Controlz = {}
 ct=0
 gmDrums = [36,37,38,39]
 for keynum in drumkeys:
-    Controlz[ct]=DrumBtn(keynum, keys[keynum], midi1, [gmDrums[ct]], .2, drumPadPressed)
+    Controlz[ct]=DrumBtn(keynum, keys[keynum], midi1, gmDrums[ct], .2, drumPadPressed)
     ct=ct+1
+    print(keynum)
     
 for keynum in fxkeys:
-    fxKeyStatemap = [BoardStateItem("FxOn".ct-4, colz["GREEN"], 40+ct, 1 ),
-                     BoardStateItem("FxOff".ct-4, colz["RED"], 40+ct, 96 )]
-    Controlz[ct]=LongStateBtn(40+ct, keys[keynum], midi1,fxKeyStateMap, fxBtnPressed)
+    fxKeyStateMap = StateMap([
+                             StateMapItem("FxOn", colz["GREEN"], (ct+40), 1 ),
+                             StateMapItem("FxOff", colz["RED"], (ct+40), 96 )
+                             ]
+                             )
+    Controlz[ct]=LongStateBtn(keynum, keys[keynum], midi1,fxKeyStateMap, fxBtnPressed)
     ct=ct+1
+    print(keynum)
     
 for keynum in loopkeys:
-    loopKeyStatemap = [BoardStateItem("LoopOn".ct-8, colz["GREEN"], 50+ct, 1 ),
-                     BoardStateItem("LoopOff".ct-8, colz["RED"], 50+ct, 96 )]
-    Controlz[ct]=LongStateBtn(50+ct, keys[keynum], midi1,fxKeyStateMap, None)
+    loopKeyStateMap = StateMap([StateMapItem("LoopOn", colz["GREEN"], (ct+50), 1 ),
+                     StateMapItem("LoopOff", colz["RED"], (ct+50), 96 )])
+    Controlz[ct]=LongStateBtn(keynum, keys[keynum], midi1,loopKeyStateMap, None)
     ct=ct+1
+    print(keynum)
 
 #button to either navigate between boardStates or to save a current boardState
 
-boardStatesBtnMap = [BoardStateItem("Board1", colz["RED"], None, None ),
-                     BoardStateItem("Board2", colz["YELLOW"], None, None ),
-                     BoardStateItem("Board3", colz["GREEN"], None, None )
-                     BoardStateItem("Board4", colz["BLUE"], None, None )]
+boardStatesBtnMap = StateMap(
+                            [StateMapItem("Board1", colz["RED"], None, None),
+                             StateMapItem("Board2", colz["YELLOW"], None, None),
+                             StateMapItem("Board3", colz["GREEN"], None, None),
+                             StateMapItem("Board4", colz["BLUE"], None, None)
+                             ]
+                            )
 
 
-Controlz[ct] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, boardStatesBtnMap, boardStatePressed)
+Controlz[ct] = LongStateBtn(keynum, keys[exkeys[0]], None, boardStatesBtnMap, boardStatePressed)
 ct+=1
-songSelectionBtnMap =  [BoardStateItem("Song".i, x, None, None) for i,x in enumerate(colz.values())] 
+songSelectionBtnMap =  StateMap([StateMapItem("Song", x, None, None) for i,x in enumerate(colz.values())])
 
 #song selection
-Controlz[ct] = StateBtn(exkeys[1], keys[exkeys[1]], None,  songSelectionBtnMap, songChosen)
+Controlz[ct] = LongStateBtn(keynum, keys[exkeys[1]], None,  songSelectionBtnMap, songChosenPressed)
 ct+=1
 #reset button (also does volume on/off)
 
-resetBtnMap =       [BoardStateItem("Off", colz["RED"], 60, 96 ),
-                     BoardStateItem("Playing", colz["GREEN"], 61, 96 ),
-                     BoardStateItem("Fadeout", colz["YELLOW"], 60, 1 )]
+resetBtnMap =        StateMap([StateMapItem("Off", colz["RED"], 60, 96 ),
+                     StateMapItem("Playing", colz["GREEN"], 61, 96 ),
+                     StateMapItem("Fadeout", colz["YELLOW"], 60, 1 )])
 
 
 
-Controlz[ct] = StateBtn(exkeys[2], keys[exkeys[2]], midi1, resetPressed)
+Controlz[ct] = LongStateBtn(keynum, keys[exkeys[2]], midi1, resetBtnMap, resetPressed)
     
 ct+=1
     

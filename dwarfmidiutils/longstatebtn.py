@@ -1,8 +1,5 @@
 import time
-from adafruit_midi.note_off import NoteOff
-from adafruit_midi.note_on import NoteOn
-from adafruit_midi.control_change import ControlChange
-from adafruit_midi.program_change import ProgramChange
+
 
 
 #needs a concept of a state map
@@ -17,11 +14,9 @@ class LongStateBtn:
         self.btn=btn
         self.adaMidi = adaMidi
         self.stateMap=stateMap
-        self.callback = callback
-        
-        self.callback=callback
-        
-        self.btn.set_led(stateMap.currCol)
+        self.callback = callback        
+        self.btn.set_led(*self.stateMap.currCol())
+        self.lastPressed=0
             
  
     def check(self):
@@ -37,16 +32,16 @@ class LongStateBtn:
             
            
     def press(self, lp):
-        print("state button", self.id, self.state, lp)
+        print("state button", self.id, self.stateMap.pos,lp)
         self.stateMap.next()
         self.enactState()
         if self.callback!=None:
-            self.callback(self.id, self.state,lp)
+            self.callback(self.id, self.stateMap.pos,lp)
 
         
         
     def setState(self, stateNum):
-        print ("setting self.state, currently ", self.state, " to ", state)
+        print ("setting self.state, of fx button", self.id, " from " , self.stateMap.pos, " to ", stateNum)
         if stateNum==self.stateMap.pos:
             return
         self.stateMap.goto(stateNum)
@@ -55,8 +50,8 @@ class LongStateBtn:
     def getState(self):
         return self.stateMap.pos
     
-    def enactState(self):        
-        self.btn.set_led(self.stateMap.currCol())
-        if self.midi==None: return
+    def enactState(self):      
+        if self.adaMidi==None: return
         if self.stateMap.currMidiCmd()==None: return
+        self.btn.set_led(*self.stateMap.currCol())
         self.adaMidi.send(self.stateMap.currMidiCmd())

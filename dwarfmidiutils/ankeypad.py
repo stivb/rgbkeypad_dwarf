@@ -1,6 +1,4 @@
 import time
-from adafruit_midi.control_change import ControlChange
-from adafruit_midi.program_change import ProgramChange
 from analogio import AnalogIn
 
 class AnKeyPad:

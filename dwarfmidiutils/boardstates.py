@@ -21,7 +21,7 @@ class BoardState:
 class BoardStates:
     
     def __init__(self, nStates, callback):
-        self.states = [None]*nStates
+        self.states = [None,None,None,None]
         self.pos = 0
         self.callback = callback
         
@@ -34,8 +34,8 @@ class BoardStates:
         self.status()
             
     def gotoState(self,pos):
-        if self.pos==pos: return
-        currState = self.pos
+        if self.pos==pos: 
+            return
         filteredList = list(filter(lambda item: item is not None, self.states))
         if pos >=len(filteredList):
             self.pos=0

@@ -9,12 +9,12 @@ class DrumBtn:
         self.velocity=100
         self.btn=btn
         self.justPressed=False
-        self.color=(0, 255, 255)
+        self.color=(255,255,255)
         self.lastPressed=0
         self.debounce = debounce
         self.callback = callback
         btn.set_led(*self.color)
-        self.btn.led_off()
+        #self.btn.led_off()
         
     def noteOn(self):
         self.btn.led_on()
@@ -27,8 +27,7 @@ class DrumBtn:
             self.wasPressed()
   
     def wasPressed(self):
-        print(self.id)
-        print(self.btn)
+        print(self.id, " ", self.btn)
         now = time.monotonic()
         if now-self.lastPressed > self.debounce :
             self.noteOn()
