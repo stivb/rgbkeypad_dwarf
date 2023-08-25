@@ -1,3 +1,4 @@
-cp *.py /media/steve/CIRCUITPY/
-cp *.json /media/steve/CIRCUITPY/
-cp -r ./dwarfmidiutils/*.py /media/steve/CIRCUITPY/dwarfmidiutils/
+#!/bin/bash
+cp /media/steve/CIRCUITPY/*.py ./
+cp /media/steve/CIRCUITPY/*.json ./
+cp -r /media/steve/CIRCUITPY/dwarfmidiutils/*.py ./dwarfmidiutils
