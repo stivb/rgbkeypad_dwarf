@@ -300,16 +300,16 @@ def setAndEnactBoardState():
     nextBoardState = boardStates.getState()
     currBoardState.status()
     nextBoardState.status()
-    if currBoardState.fx!=nextBoardState.fx:
+    if currBoardState.fx!=nextBoardState.fx and nextBoardState.fx!=-1:
         Controlz[nextBoardState.fx].wasPressed()
     currBoardLoops = set(currBoardState.loops)
     nextBoardLoops = set(nextBoardState.loops)
     turnOffs = currBoardLoops-nextBoardLoops
     turnOns = nextBoardLoops-currBoardLoops
     for turnOff in turnOffs:
-        Controlz[turnOff].wasPressed()
+        Controlz[turnOff].press(False)
     for turnOn in turnOns:
-        Controlz[turnOn].wasPressed()
+        Controlz[turnOn].press(False)
     
     
 
@@ -324,11 +324,15 @@ def songSelectionPressed(id, state, longpress):
     
 def boardCapture():
     #fxBtns = (map((lambda keyNum: Controlz[keyNum]), fxKeys))
-    activeFx = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), fxkeys))[0]
+    global fxkeys,loopkeys
+    activeFx=-1
+    activeFxs = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), fxkeys))
+    if len(activeFxs)>0:
+        activeFx=activeFxs[0]
     activeLoops = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), loopkeys))
     return BoardState(activeFx,activeLoops)
 
-boardStates = BoardStates(boardStateUpdated, boardStateUpdated)
+boardStates = BoardStates(boardStateUpdated)
 
     
 

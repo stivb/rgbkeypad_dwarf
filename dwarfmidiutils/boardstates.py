@@ -20,7 +20,7 @@ class BoardState:
         
 class BoardStates:
     
-    def __init__(self, nStates, callback):
+    def __init__(self, callback):
         self.states = [None,None,None,None]
         self.pos = 0
         self.callback = callback
