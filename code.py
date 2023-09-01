@@ -126,11 +126,17 @@ EAST=3
 SOUTH=6
 WEST=9
 
-colz = {"RED":(255,0,0),"GREEN":(0,255,0),"BLUE":(0,0,255),
-"CYAN":(0,255,255),"VIOLET":(255,0,255),"YELLOW":(255,255,0),
-"TEAL":(0,128,128),"PURPLE":(128,0,128),"OLIVE":(128,128,0),
-"MAROON":(128,0,0),"LIGHTGREEN":(0,128,0),"NAVY":(0,0,128),
-"GRAY":(128,128,128)}
+colz = OrderedDict()
+colz["RED"] = (255,0,0)
+colz["GREEN"]=(0,255,0)
+colz["BLUE"]=(0,0,255)
+colz["CYAN"]=(0,255,255)
+colz["VIOLET"]=(255,0,255)
+colz["YELLOW"]=(255,255,0)
+colz["ORANGE"]=(255,70,0)
+colz["GRAY"]=(30,30,30)
+colz["WHITE"]=(255,255,255)
+
 
 gCurrMidiMode=MIDI_MODE_EXCL
 
@@ -248,20 +254,16 @@ def barsPressed(id, state):
 #reset - the toggling of volume and loop handled by midilearn
 #when in non-midilearn state, just switches off all loopsand fx
 #sets midi back to exclusive mode
-def resetPressed(id, state):
-    global gCurrMidiMode
-    if gCurrMidiMode==MIDI_MODE_LEARN: return
-    #turning all loops off (regardless of ending or starting song)
-    for loopkey in loopkeys:
-        Controlz[loopkey].setState(0)
-    #turning all fx off (regardless of ending or starting song)
-    for fxkey in fxkeys:
-        Controlz[fxkey].setState(0)
-    #going to midi mode exclusive (regardless of ending or starting song)
-    Controlz[exkeys[0]].setState(MIDI_MODE_EXCL);
-    # if restarting turning off the fade state
-    if state==1:
-        Controlz[exkeys[1]].setState(state);
+def resetPressed(id, newState, lp):
+    global resetBtnMap
+    if newState==0:    
+        for loopkey in loopkeys:
+            Controlz[loopkey].setState(0)
+        #turning all fx off (regardless of ending or starting song)
+        for fxkey in fxkeys:
+            Controlz[fxkey].setState(0)
+    #hack here, just turning the fader off
+        midi1.send(ControlChange(61,96))
 
     
 def drumPadPressed(id, value):
@@ -347,7 +349,7 @@ keysEast =  {"Drum1":15,"Drum2":11,"Drum3":7,"Drum4":3,
              "Fx1":14,"Fx2":10,"Fx3":6,"Fx4":2,
              "Ex1":8,"Ex2":4,"Ex3":0}
     
-ks = keysSouth
+ks = keysNorth
 ksInv = {v: k for k, v in ks.items()}
 
 drumkeys = [ks["Drum1"],ks["Drum2"],ks["Drum3"],ks["Drum4"]]
@@ -377,8 +379,8 @@ for keynum in drumkeys:
     
 for keynum in fxkeys:
     fxKeyStateMap = StateMap([
-                             StateMapItem("FxOff", colz["RED"], (ct+40), 96 ),
-                             StateMapItem("FxOn", colz["GREEN"], (ct+40), 1 )
+                             StateMapItem("FxOff", colz["RED"], (ct+40-4), 1 ),
+                             StateMapItem("FxOn", colz["GREEN"], (ct+40-4), 96 )
                              ]
                              )
     Controlz[keynum]=LongStateBtn(keynum, keys[keynum], midi1,fxKeyStateMap, fxBtnPressed)
@@ -387,8 +389,8 @@ for keynum in fxkeys:
     
 for keynum in loopkeys:
     loopKeyStateMap = StateMap([
-                               StateMapItem("LoopOn", colz["RED"], (ct+50), 96 ),
-                               StateMapItem("LoopOff", colz["GREEN"], (ct+50), 1)
+                               StateMapItem("LoopOn", colz["RED"], (ct+50-8), 1 ),
+                               StateMapItem("LoopOff", colz["GREEN"], (ct+50-8), 96)
                                ])
     Controlz[keynum]=LongStateBtn(keynum, keys[keynum], midi1,loopKeyStateMap, None)
     ct=ct+1
@@ -407,17 +409,16 @@ boardStatesBtnMap = StateMap(
 Controlz[exkeys[0]] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, boardStatesBtnMap, boardStatePressed)
 
 songSelectionBtnMap =  StateMap([StateMapItem("Song", x, None, None) for i,x in enumerate(list(colz.values()))])
-print(list(colz.values()))
-print(songSelectionBtnMap.allCols())
+
 
 #song selection
 Controlz[exkeys[1]] = LongStateBtn(exkeys[1], keys[exkeys[1]], None,  songSelectionBtnMap, songSelectionPressed)
 
 #reset button (also does volume on/off)
 
-resetBtnMap =        StateMap([StateMapItem("Off", colz["RED"], 60, 96 ),
-                     StateMapItem("Playing", colz["GREEN"], 61, 96 ),
-                     StateMapItem("Fadeout", colz["YELLOW"], 60, 1 )])
+resetBtnMap =        StateMap([StateMapItem("Off", colz["RED"], 60, 1 ),
+                     StateMapItem("Playing", colz["GREEN"], 60, 96 ),
+                     StateMapItem("Fadeout", colz["YELLOW"], 61, 1 )])
 
 
 
