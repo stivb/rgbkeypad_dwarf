@@ -301,7 +301,7 @@ def setAndEnactBoardState():
     currBoardState.status()
     nextBoardState.status()
     if currBoardState.fx!=nextBoardState.fx and nextBoardState.fx!=-1:
-        Controlz[nextBoardState.fx].wasPressed()
+        Controlz[nextBoardState.fx].press(False)
     currBoardLoops = set(currBoardState.loops)
     nextBoardLoops = set(nextBoardState.loops)
     turnOffs = currBoardLoops-nextBoardLoops
