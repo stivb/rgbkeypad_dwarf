@@ -14,8 +14,8 @@ class BoardState:
         self.loops = loops
         
     def status(self):
-        print(self.fx)
-        print(self.loops)
+        print("fx is ", self.fx)
+        print("loops are", self.loops)
     
         
 class BoardStates:
@@ -40,8 +40,9 @@ class BoardStates:
         if pos >=len(filteredList):
             self.pos=0
         else:self.pos=pos
-        self.callback(self.states[self.pos],True)
         self.status()
+        self.callback(self.states[self.pos],True)
+        
         
     def nextState(self):
         self.gotoState(self.pos+1)
@@ -55,4 +56,5 @@ class BoardStates:
     def status(self):
         filteredList = list(filter(lambda item: item is not None, self.states))
         print ("self.pos is ", self.pos, " out of ", len(filteredList), " populated items")
+        print (self.states[self.pos-1].status())
         

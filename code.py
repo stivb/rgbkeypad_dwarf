@@ -63,6 +63,7 @@ from dwarfmidiutils.monitor import Monitor
 from dwarfmidiutils.settings import Settings
 from dwarfmidiutils.boardstates import BoardState,BoardStates
 from dwarfmidiutils.statemap import *
+from dwarfmidiutils.pinswitch import PinSwitch
 
 import json
 import board
@@ -127,6 +128,7 @@ SOUTH=6
 WEST=9
 
 colz = OrderedDict()
+colz["BLACK"] = (0,0,0)
 colz["RED"] = (255,0,0)
 colz["GREEN"]=(0,255,0)
 colz["BLUE"]=(0,0,255)
@@ -234,7 +236,8 @@ def fxBtnPressed(id, state, lp): #turning off all the other fx but not the one j
         if fxkey!=id and state==1:
             Controlz[fxkey].setState(0)
 
-            
+def pinPressed(id):
+    print("PIN PRESSED ", id)
     
 def footPedalPressed(id, state):
     global debugging
@@ -249,7 +252,20 @@ def barsPressed(id, state):
     if debugging: print(id,state)
     
 
-        
+def notificationMade(numbers):
+    print("THERE ARE ", len(numbers), "STATES IN THIS SONG ")
+    for x in numbers:
+        addBoardState(num2bin(x))
+    
+def addBoardState(arr):
+    print(arr)
+    
+def num2bin(num):
+    q= list(bin(num)[2:])
+    while (len(q)<6): q.insert(0, '0')
+    retval = [eval(i) for i in q]
+    return retval.reverse()
+    
     
 #reset - the toggling of volume and loop handled by midilearn
 #when in non-midilearn state, just switches off all loopsand fx
@@ -353,7 +369,7 @@ keysEast =  {"Drum1":15,"Drum2":11,"Drum3":7,"Drum4":3,
              "Fx1":14,"Fx2":10,"Fx3":6,"Fx4":2,
              "Ex1":8,"Ex2":4,"Ex3":0}
     
-ks = keysNorth
+ks = keysSouth
 ksInv = {v: k for k, v in ks.items()}
 
 drumkeys = [ks["Drum1"],ks["Drum2"],ks["Drum3"],ks["Drum4"]]
@@ -370,7 +386,7 @@ print ("loop keys ", loopkeys, " fx keys:", fxkeys)
 
 #utility singleton classes
 noteBasher = NoteBasher(midi1, 100, .1)
-midiReader = MidiReader(midi1)
+midiReader = MidiReader(midi1, notificationMade)
 
 
 Controlz = {}
@@ -383,7 +399,7 @@ for keynum in drumkeys:
     
 for keynum in fxkeys:
     fxKeyStateMap = StateMap([
-                             StateMapItem("FxOff", colz["RED"], (ct+40-4), 1 ),
+                             StateMapItem("FxOff", colz["BLACK"], (ct+40-4), 1 ),
                              StateMapItem("FxOn", colz["GREEN"], (ct+40-4), 96 )
                              ]
                              )
@@ -393,7 +409,7 @@ for keynum in fxkeys:
     
 for keynum in loopkeys:
     loopKeyStateMap = StateMap([
-                               StateMapItem("LoopOn", colz["RED"], (ct+50-8), 1 ),
+                               StateMapItem("LoopOn", colz["BLACK"], (ct+50-8), 1 ),
                                StateMapItem("LoopOff", colz["GREEN"], (ct+50-8), 96)
                                ])
     Controlz[keynum]=LongStateBtn(keynum, keys[keynum], midi1,loopKeyStateMap, None)
@@ -403,12 +419,20 @@ for keynum in loopkeys:
 #button to either navigate between boardStates or to save a current boardState
 
 boardStatesBtnMap = StateMap(
-                            [StateMapItem("Board1", colz["RED"], None, None),
-                             StateMapItem("Board2", colz["YELLOW"], None, None),
-                             StateMapItem("Board3", colz["GREEN"], None, None),
-                             StateMapItem("Board4", colz["BLUE"], None, None)
+                            [StateMapItem("Board1", colz["BLACK"], None, None),
+                             StateMapItem("Board2", colz["RED"], None, None),
+                             StateMapItem("Board3", colz["YELLOW"], None, None),
+                             StateMapItem("Board4", colz["GREEN"], None, None)
                              ]
                             )
+
+boardStates.setState(BoardState(ks["Fx2"],[ks["Loop1"],ks["Loop2"],ks["Loop3"],ks["Loop4"],ks["Loop5"]]));
+boardStates.setState(BoardState(ks["Fx2"],[ks["Loop1"],ks["Loop2"]]));
+boardStates.setState(BoardState(ks["Fx2"],[ks["Loop1"],ks["Loop2"],ks["Loop3"]]));
+boardStates.setState(BoardState(ks["Fx2"],[ks["Loop1"],ks["Loop2"],ks["Loop3"],ks["Loop4"]]));
+
+
+
 
 Controlz[exkeys[0]] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, boardStatesBtnMap, boardStatePressed)
 
@@ -420,7 +444,7 @@ Controlz[exkeys[1]] = LongStateBtn(exkeys[1], keys[exkeys[1]], None,  songSelect
 
 #reset button (also does volume on/off)
 
-resetBtnMap =        StateMap([StateMapItem("Off", colz["RED"], 60, 1 ),
+resetBtnMap =        StateMap([StateMapItem("Off", colz["BLACK"], 60, 1 ),
                      StateMapItem("Playing", colz["GREEN"], 60, 96 ),
                      StateMapItem("Fadeout", colz["YELLOW"], 61, 1 )])
 
@@ -439,6 +463,13 @@ Controlz[exkeys[2]] = LongStateBtn(exkeys[2], keys[exkeys[2]], midi1, resetBtnMa
 #     ctrlCt+=1
 
 ct=16
+pinz = [board.GP2, board.GP3, board.GP6, board.GP7]
+for pin in pinz:
+    Controlz[ct] = PinSwitch(ct,pin,pinPressed)
+    ct=ct+1
+
+
+
     
 drumPad = AnKeyPad(midi1, ct, board.A2, drumPadPressed)
 Controlz[ct] = drumPad
@@ -449,12 +480,6 @@ ct+=1
 
 joyController = JoyStick(midi1,ct, board.A1, board.A0, board.GP22, joyStickAction)
 Controlz[ct] = joyController
-
-
-
-                  
-
-
 
 # displayio.release_displays()
 # tft_cs = board.GP13
@@ -470,24 +495,19 @@ Controlz[ct] = joyController
 # settings = Settings("settings.json",funcs,monitor)
 
 
-
-
-
-
-
-
 def get_voltg(raw):
     return (raw * 3.3) / 65536
 
 while True:
     
-    if not midiReader.transmissionOn:
-        keybow.update()        
-        for i in range(0,len(Controlz)):
-                Controlz[i].check()
-        noteBasher.tidyUp()
+
+    keybow.update()        
+    for i in range(0,len(Controlz)):
+            Controlz[i].check()
+    noteBasher.tidyUp()
         
-    midiReader.displayMidiMessage(midi1.receive())
+    if midiReader.on:
+        midiReader.read(midi1.receive())
     
 
     
@@ -500,9 +520,3 @@ while True:
 
 
         
-
-
-
-
-
-
