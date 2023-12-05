@@ -8,15 +8,12 @@ class BoardStates:
         self.pos = 0
         self.callback = callback
         
-    def setState(self, loopsOnArr):        
+    def setStates(self, loopsOnArr):        
         self.states[self.pos] = loopsOnArr
-        self.pos = self.pos+1
-        if self.pos>=len(self.states):
-            self.pos=0
-        self.callback(self.states[self.pos],False) 
+        self.pos = -1
             
     def gotoState(self,pos):
-        if self.pos==pos: 
+        if self.pos==pos || self.pos<0 : 
             return
         filteredList = list(filter(lambda item: item is not None, self.states))
         if pos >=len(filteredList):

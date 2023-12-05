@@ -260,7 +260,7 @@ def barsPressed(id, state):
 def notificationMade(numbers):
     print("THERE ARE ", len(numbers), "STATES IN THIS SONG ")
     for x in numbers:
-        boardStates.setState(num2binIndexes(x))
+        boardStates.setStates(num2binIndexes(x))
 
     
 def num2binIndexes(num):
@@ -346,10 +346,10 @@ def setAndEnactBoardState():
     
     
 
-def boardStateUpdated(aBoardState,justNav=True):
+def boardStateUpdated(aBoardState,enact=True):
     print("Navigation", justNav)
     print(aBoardState)
-    if justNav:
+    if enact:
         setAndEnactBoardState()
         
 def songSelectionPressed(id, state, longpress):
