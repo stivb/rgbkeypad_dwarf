@@ -15,6 +15,7 @@
 import displayio
 from adafruit_display_text import label, wrap_text_to_lines
 from adafruit_st7789 import ST7789
+import terminalio
 
 class Monitor:
     

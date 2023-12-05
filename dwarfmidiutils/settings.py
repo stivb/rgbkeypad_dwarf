@@ -1,3 +1,4 @@
+import json
 
 class Settings:
     def __init__(self, jsonFile, funcs, monitor):

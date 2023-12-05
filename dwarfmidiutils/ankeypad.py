@@ -14,6 +14,7 @@ class AnKeyPad:
         self.notchMap=[0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
         self.velocity=100
         self.lastPressed = time.monotonic()
+        self.pressCt=0
         
     def get_voltage(self, voltage):
         return int((voltage * 127) / 65536)
@@ -28,7 +29,14 @@ class AnKeyPad:
         currVoltage = self.get_voltage(self.analogue.value)
         if currVoltage<25:
             self.prevVoltage=currVoltage
-            return    
+            if self.pressCt>0:
+                print(">>>>>>>", self.pressCt)
+                self.pressCt=0
+            return
+        
+        if abs(self.prevVoltage-currVoltage)<4:
+            self.pressCt+=1
+            return
         
         if  abs(self.prevVoltage-currVoltage)>3 and  now-self.lastPressed >.1:
             

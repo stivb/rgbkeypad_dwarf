@@ -10,7 +10,7 @@ class MidiReader:
     def __init__(self, midi, notify):      
         self.midi = midi
         self.on = True
-        self.onAt = time.monotonic()
+        self.lastMsgTime = -1
         self.numbers = []
         self.notify=notify
         print("Reading from ", self.midi.in_channel)
@@ -41,19 +41,22 @@ class MidiReader:
     
     
     def read(self,msg_in):
-        if time.monotonic()-self.onAt >2:
-            self.on=False
-            print("NO MORE WAITING")
-            self.notify(self.numbers)
+        if self.lastMsgTime>0:
+            if time.monotonic()-self.lastMsgTime >2:
+                self.on=False
+                print("NO MORE WAITING")
+                self.notify(self.numbers)        
         if msg_in is None:
             return
         if isinstance(msg_in, NoteOn):
-            if msg_in.note==127:
-                self.on=False
-                self.notify(self.numbers)
-                return
-            else:
-                numbers.append(msg_in.note)
+            
+            if self.lastMsgTime<0:
+                self.numbers = []
+            ln = len(self.numbers)
+            if ln==0 or self.numbers[ln-1]!=msg_in.note:
+                self.numbers.append(msg_in.note)
+                print("Appending ", msg_in.note)
+                self.lastMsgTime = time.monotonic()
                  
              
              

@@ -1,21 +1,4 @@
 import time
-
-class BoardState:
-    
-    def __init__(self, fx=-1, loops=None):
-        self.fx = fx
-        self.loops = loops
-        self.status()
-        
-    def setFx(self, fx):
-        self.fx = fx
-        
-    def setLoops(self, loops):
-        self.loops = loops
-        
-    def status(self):
-        print("fx is ", self.fx)
-        print("loops are", self.loops)
     
         
 class BoardStates:
@@ -25,22 +8,20 @@ class BoardStates:
         self.pos = 0
         self.callback = callback
         
-    def setState(self, state):        
-        self.states[self.pos] = state
+    def setState(self, loopsOnArr):        
+        self.states[self.pos] = loopsOnArr
         self.pos = self.pos+1
         if self.pos>=len(self.states):
             self.pos=0
-        self.callback(self.states[self.pos],False)
-        self.status()
+        self.callback(self.states[self.pos],False) 
             
     def gotoState(self,pos):
         if self.pos==pos: 
             return
         filteredList = list(filter(lambda item: item is not None, self.states))
         if pos >=len(filteredList):
-            self.pos=0
+            return
         else:self.pos=pos
-        self.status()
         self.callback(self.states[self.pos],True)
         
         
@@ -56,5 +37,10 @@ class BoardStates:
     def status(self):
         filteredList = list(filter(lambda item: item is not None, self.states))
         print ("self.pos is ", self.pos, " out of ", len(filteredList), " populated items")
-        print (self.states[self.pos-1].status())
-        
+        i=0
+        for bs in filteredList:
+            if i==self.pos: print("****************")
+            print(bs)
+            if i==self.pos: print("****************")
+            i=i+1
+            

@@ -1,20 +1,15 @@
 import time
 
 
-
-#needs a concept of a state map
-#something with for each state (with midi consequences)
-#state 0 - REST, onclick sends 96 on channel 40, PLAYING, onclick sends 96 on channel 41, OFF, onclick sends 0 on channel 40
-#which means a state is defined by name,color,channel,value 
-
 class LongStateBtn:
-   #LongStateBtn(currKey, keys[exkeys[0]], None, 4, list(colz.values())[0:4], boardStatePressed)
-    def __init__(self, nId, btn, adaMidi,stateMap, callback):
+   
+    def __init__(self, nId, btn, adaMidi,stateMap, preCmdCallBack, postCmdCallBack):
         self.id = nId
         self.btn=btn
         self.adaMidi = adaMidi
         self.stateMap=stateMap
-        self.callback = callback        
+        self.preCmdCallBack = preCmdCallBack
+        self.postCmdCallBack = postCmdCallBack        
         self.btn.set_led(*self.stateMap.currCol())
         self.lastPressed=0
             
@@ -34,9 +29,11 @@ class LongStateBtn:
     def press(self, lp):
         print("state button", self.id, self.stateMap.pos,lp)
         self.stateMap.next()
+        if self.preCmdCallBack!=None:
+            self.preCmdCallBack(self.id, self.stateMap.pos,lp)
         self.enactState()
-        if self.callback!=None:
-            self.callback(self.id, self.stateMap.pos,lp)
+        if self.postCmdCallBack!=None:
+            self.postCmdCallBack(self.id, self.stateMap.pos,lp)
 
         
         
