@@ -241,6 +241,7 @@ def fxBtnPressed(id, state, lp): #turning off all the other fx but not the one j
 
 def pinPressed(id):
     global pedalBoardState
+    print("pin pressed :", id)
     pinValDict = {19:1,18:2,17:3,16:0}
     pedalBoardState = pinValDict[id]
     enactBoardStateChange(pedalBoardState)
@@ -333,6 +334,7 @@ def boardStatePressed(id, state, longpress):
         boardStates.nextState()
         
 def enactBoardStateChange(pBoardState):
+    print("BOARD STATE CHANGE CALLED")
     currBoardState = boardCapture()
     nextBoardState = boardStates.getState(pBoardState)
     currBoardLoops = set(currBoardState)
@@ -467,9 +469,11 @@ Controlz[exkeys[1]] = LongStateBtn(exkeys[1], keys[exkeys[1]], midi1, resetBtnMa
 #     ctrlCt+=1
 
 ct=16
-pinz = [board.GP2, board.GP3, board.GP6, board.GP7]
+#pinz = [board.GP8, board.GP7, board.GP2, board.GP1]
+pinz = [board.GP2, board.GP6, board.GP7, board.GP8]
 for pin in pinz:
     Controlz[ct] = PinSwitch(ct,pin,pinPressed)
+    print("Control ", ct, " listens to pin ", pin)
     ct=ct+1
 
 

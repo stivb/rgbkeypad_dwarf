@@ -11,7 +11,7 @@ class StateMap:
             self.pos=0
         else:
             self.pos+=1
-        print("Now at state", self.stateMapItems[self.pos].name, "@",self.pos )
+        #print("Now at state", self.stateMapItems[self.pos].name, "@",self.pos )
 
     def allCols(self):
         return list(map((lambda x: x.col), self.stateMapItems))
