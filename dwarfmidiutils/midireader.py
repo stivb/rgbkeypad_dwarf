@@ -37,6 +37,7 @@ class MidiReader:
     def reset(self):
         self.on=True
         self.numbers = []
+        #self.lastMsgTime = -1
         
     
     

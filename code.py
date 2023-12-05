@@ -102,6 +102,8 @@ transmissionOn=True
 
 debugging=False
 
+pedalBoardState=-1
+
 #spi = busio.SPI(clock=board.GP10, MOSI=board.GP11)
 #cs = digitalio.DigitalInOut(board.GP13)
 #cs.direction = digitalio.Direction.OUTPUT
@@ -238,10 +240,10 @@ def fxBtnPressed(id, state, lp): #turning off all the other fx but not the one j
             Controlz[fxkey].setState(0)
 
 def pinPressed(id):
-    global boardStates
+    global pedalBoardState
     pinValDict = {19:1,18:2,17:3,16:0}
-    goto = pinValDict[id]
-    boardStates.gotoState(goto)
+    pedalBoardState = pinValDict[id]
+    enactBoardStateChange(pedalBoardState)
     
     
 def footPedalPressed(id, state):
@@ -259,8 +261,8 @@ def barsPressed(id, state):
 
 def notificationMade(numbers):
     print("THERE ARE ", len(numbers), "STATES IN THIS SONG ")
-    for x in numbers:
-        boardStates.setStates(num2binIndexes(x))
+    for idx, x in enumerate(numbers):
+        boardStates.setState(num2binIndexes(x), idx)
 
     
 def num2binIndexes(num):
@@ -281,8 +283,10 @@ def num2binIndexes(num):
 #when in non-midilearn state, just switches off all loopsand fx
 #sets midi back to exclusive mode
 def resetCued(id, newState, lp):
+    global pedalBoardState
     if newState==0:
         midiReader.reset()
+        pedalBoardState = -1
 
 def resetPressed(id, newState, lp):
     global resetBtnMap
@@ -328,29 +332,20 @@ def boardStatePressed(id, state, longpress):
     else:
         boardStates.nextState()
         
-def setAndEnactBoardState():
+def enactBoardStateChange(pBoardState):
     currBoardState = boardCapture()
-    nextBoardState = boardStates.getState()
+    nextBoardState = boardStates.getState(pBoardState)
     currBoardLoops = set(currBoardState)
     nextBoardLoops = set(nextBoardState)
     turnOffs = currBoardLoops-nextBoardLoops
     turnOns = nextBoardLoops-currBoardLoops
     
-    print ("currBoardState ", currBoardState)
-    print ("nextBoardState ", nextBoardState)
     
     for turnOff in turnOffs:
         Controlz[turnOff].press(False)
     for turnOn in turnOns:
         Controlz[turnOn].press(False)
-    
-    
 
-def boardStateUpdated(aBoardState,enact=True):
-    print("Navigation", justNav)
-    print(aBoardState)
-    if enact:
-        setAndEnactBoardState()
         
 def songSelectionPressed(id, state, longpress):
     print("Song chosen")
@@ -360,7 +355,7 @@ def boardCapture():
     activeLoops = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), loopkeys))
     return activeLoops
 
-boardStates = BoardStates(boardStateUpdated)
+boardStates = BoardStates()
 
 #really need some documentation about why these numbers correspond to the buttons  
 
@@ -430,7 +425,7 @@ for keynum in loopkeys:
 #button to either navigate between boardStates or to save a current boardState
 
 boardStatesBtnMap = StateMap(
-                            [StateMapItem("Board1", colz["BLACK"], None, None),
+                            [StateMapItem("Board1", colz["WHITE"], None, None),
                              StateMapItem("Board2", colz["RED"], None, None),
                              StateMapItem("Board3", colz["YELLOW"], None, None),
                              StateMapItem("Board4", colz["GREEN"], None, None)
@@ -443,7 +438,7 @@ boardStatesBtnMap = StateMap(
 # boardStates.setState(BoardState(ks["Fx4"],[ks["Loop1"],ks["Loop2"],ks["Loop3"],ks["Loop4"]]));
 
 notificationMade([47,40,44,46])
-boardStates.status()
+
 
 
 
