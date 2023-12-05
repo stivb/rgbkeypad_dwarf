@@ -469,8 +469,8 @@ Controlz[exkeys[1]] = LongStateBtn(exkeys[1], keys[exkeys[1]], midi1, resetBtnMa
 #     ctrlCt+=1
 
 ct=16
-#pinz = [board.GP8, board.GP7, board.GP2, board.GP1]
-pinz = [board.GP2, board.GP6, board.GP7, board.GP8]
+#pinz = [board.GP7, board.GP6, board.GP2, board.GP1]
+pinz = [board.GP0, board.GP2, board.GP6, board.GP7]
 for pin in pinz:
     Controlz[ct] = PinSwitch(ct,pin,pinPressed)
     print("Control ", ct, " listens to pin ", pin)
@@ -478,7 +478,7 @@ for pin in pinz:
 
 
 
-    
+print("ct is now ",ct)    
 drumPad = AnKeyPad(midi1, ct, board.A2, drumPadPressed)
 Controlz[ct] = drumPad
 ct+=1

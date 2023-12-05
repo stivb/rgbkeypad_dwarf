@@ -7,6 +7,7 @@ class PinSwitch:
         self.nId = nId
         self.prevVoltage = 0
         self.pin=pin
+        print("PinSwitch ",nId, " intialized to listen to ",pin)
         self.state=0
         self.lastPressed=0.0
         self.btn = DigitalInOut(pin)
@@ -22,4 +23,5 @@ class PinSwitch:
             now = time.monotonic()
             if now-self.lastPressed >.2 :
                 self.lastPressed=now
+                print("PIN + ID", self.pin,self.nId)
                 self.callback(self.nId)
