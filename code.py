@@ -91,6 +91,11 @@ from adafruit_midi.program_change import ProgramChange
 
 from collections import OrderedDict
 
+# import os
+# logfile = open('log.txt', 'a')
+# duplicate stdout and stderr to the log file
+# os.dupterm(logfile)
+
 
 
 keybow = PMK(Hardware())
@@ -102,7 +107,7 @@ transmissionOn=True
 
 debugging=False
 
-pedalBoardState=-1
+pedalBoardStateIdx=-1
 
 #spi = busio.SPI(clock=board.GP10, MOSI=board.GP11)
 #cs = digitalio.DigitalInOut(board.GP13)
@@ -240,11 +245,11 @@ def fxBtnPressed(id, state, lp): #turning off all the other fx but not the one j
             Controlz[fxkey].setState(0)
 
 def pinPressed(id):
-    global pedalBoardState
+    global pedalBoardStateIdx
     print("pin pressed :", id)
     pinValDict = {19:1,18:2,17:3,16:0}
-    pedalBoardState = pinValDict[id]
-    enactBoardStateChange(pedalBoardState)
+    pedalBoardStateIdx = pinValDict[id]
+    enactBoardStateChange()
     
     
 def footPedalPressed(id, state):
@@ -284,10 +289,10 @@ def num2binIndexes(num):
 #when in non-midilearn state, just switches off all loopsand fx
 #sets midi back to exclusive mode
 def resetCued(id, newState, lp):
-    global pedalBoardState
+    global pedalBoardStateIdx
     if newState==0:
         midiReader.reset()
-        pedalBoardState = -1
+        pedalBoardStateIdx = -1
 
 def resetPressed(id, newState, lp):
     global resetBtnMap
@@ -326,17 +331,18 @@ def pagerPressed(id, value):
         settings.enactState()
         
 def boardStatePressed(id, state, longpress):
-    print("boardStatePressed")
+    global pedalBoardStateIdx
     global boardStates
     if longpress:
-        boardStates.setState(boardCapture())
+        pedalBoardStateIdx=0
     else:
-        boardStates.nextState()
+        pedalBoardStateIdx = boardStates.getNextStateIdx(pedalBoardStateIdx)
+    enactBoardStateChange()
         
-def enactBoardStateChange(pBoardState):
+def enactBoardStateChange():
     print("BOARD STATE CHANGE CALLED")
     currBoardState = boardCapture()
-    nextBoardState = boardStates.getState(pBoardState)
+    nextBoardState = boardStates.getState(pedalBoardStateIdx)
     currBoardLoops = set(currBoardState)
     nextBoardLoops = set(nextBoardState)
     turnOffs = currBoardLoops-nextBoardLoops
@@ -439,7 +445,7 @@ boardStatesBtnMap = StateMap(
 # boardStates.setState(BoardState(ks["Fx4"],[ks["Loop1"],ks["Loop2"],ks["Loop3"]]));
 # boardStates.setState(BoardState(ks["Fx4"],[ks["Loop1"],ks["Loop2"],ks["Loop3"],ks["Loop4"]]));
 
-notificationMade([47,40,44,46])
+notificationMade([40,44,46,47])
 
 
 
@@ -510,8 +516,9 @@ while True:
     
 
     keybow.update()        
-    for i in range(0,len(Controlz)):
-            Controlz[i].check()
+    for ctrl in Controlz:
+        #print(ctrl, Controlz[ctrl])
+        Controlz[ctrl].check()
     noteBasher.tidyUp()
         
     if midiReader.on:
