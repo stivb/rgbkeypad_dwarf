@@ -93,7 +93,6 @@ from collections import OrderedDict
 
 # import os
 # logfile = open('log.txt', 'a')
-# duplicate stdout and stderr to the log file
 # os.dupterm(logfile)
 
 
@@ -228,7 +227,7 @@ def doNotesOff():
     global Controlz
     currTime = time.monotonic()
     #print(len(drumNotesPlayed))
-    for i in range(len(drumNotesPlayed) - 1, -1, -1):
+    for i in range(len(drumNotesPlayed)):
         thisEvtSrc = drumNotesPlayed[i]
         if currTime-thisEvtSrc["when"] > 0.1:
             Controlz[thisEvtSrc["ctrlId"]].noteOff()
@@ -440,10 +439,6 @@ boardStatesBtnMap = StateMap(
                              ]
                             )
 
-# boardStates.setState(BoardState(ks["Fx4"],[ks["Loop1"],ks["Loop2"],ks["Loop3"],ks["Loop4"],ks["Loop5"]]));
-# boardStates.setState(BoardState(ks["Fx4"],[ks["Loop1"],ks["Loop2"]]));
-# boardStates.setState(BoardState(ks["Fx4"],[ks["Loop1"],ks["Loop2"],ks["Loop3"]]));
-# boardStates.setState(BoardState(ks["Fx4"],[ks["Loop1"],ks["Loop2"],ks["Loop3"],ks["Loop4"]]));
 
 notificationMade([40,44,46,47])
 
@@ -487,26 +482,26 @@ for pin in pinz:
 print("ct is now ",ct)    
 drumPad = AnKeyPad(midi1, ct, board.A2, drumPadPressed)
 Controlz[ct] = drumPad
-ct+=1
+#ct+=1
 #pagerPad = AnKeyPad(midi1, ctrlCt, board.A1, pagerPressed)
 
 #pagerPad.set_notches([36,64,87,110,126],[0,1,2,4,3])
 
-joyController = JoyStick(midi1,ct, board.A1, board.A0, board.GP22, joyStickAction)
-Controlz[ct] = joyController
+# joyController = JoyStick(midi1,ct, board.A1, board.A0, board.GP22, joyStickAction)
+# Controlz[ct] = joyController
+# 
+# displayio.release_displays()
+# tft_cs = board.GP13
+# tft_dc = board.GP12
+# spi_mosi = board.GP11
+# spi_clk = board.GP10
+# spi = busio.SPI(spi_clk, spi_mosi)
+# display_bus = displayio.FourWire(spi, command=tft_dc, chip_select=tft_cs)
+# display = ST7789(display_bus, width=240, height=240, rowstart=80, rotation=90)
+# monitor = Monitor(display)
+# funcs = Functions()
 
-displayio.release_displays()
-tft_cs = board.GP13
-tft_dc = board.GP12
-spi_mosi = board.GP11
-spi_clk = board.GP10
-spi = busio.SPI(spi_clk, spi_mosi)
-display_bus = displayio.FourWire(spi, command=tft_dc, chip_select=tft_cs)
-display = ST7789(display_bus, width=240, height=240, rowstart=80, rotation=90)
-monitor = Monitor(display)
-funcs = Functions()
-
-settings = Settings("keypadsettings.json",funcs,monitor)
+#settings = Settings("keypadsettings.json",funcs,monitor)
 
 
 def get_voltg(raw):
@@ -520,9 +515,9 @@ while True:
         #print(ctrl, Controlz[ctrl])
         Controlz[ctrl].check()
     noteBasher.tidyUp()
-        
-    if midiReader.on:
-        midiReader.read(midi1.receive())
+#         
+#     if midiReader.on:
+#         midiReader.read(midi1.receive())
     
 
     
