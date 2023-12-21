@@ -2,7 +2,7 @@ import time
 
 class DrumBtn:
     
-    def __init__(self, nId, btn, midi, note, debounce, callback=None):
+    def __init__(self, nId, btn, midi, note, debounce, cb_drumPadPressed=None):
         self.id=nId
         self.note=note
         self.midi = midi
@@ -12,14 +12,14 @@ class DrumBtn:
         self.color=(255,255,255)
         self.lastPressed=0
         self.debounce = debounce
-        self.callback = callback
+        self.cb_drumPadPressed = cb_drumPadPressed
         btn.set_led(*self.color)
         #self.btn.led_off()
         
     def noteOn(self):
         self.btn.led_on()
-        if self.callback!=None:
-                self.callback(self.id, self.note)
+        if self.cb_drumPadPressed!=None:
+                self.cb_drumPadPressed(self.id, self.note)
         self.btn.led_off()
         
     def check(self):
@@ -27,7 +27,6 @@ class DrumBtn:
             self.wasPressed()
   
     def wasPressed(self):
-        print(self.id, " ", self.btn)
         now = time.monotonic()
         if now-self.lastPressed > self.debounce :
             self.noteOn()

@@ -33,5 +33,4 @@ class NoteBasher:
         noteOffs = [tup for tup in self.noteQueue if time.monotonic()-tup[1]> .09]
         for index, tup in enumerate(noteOffs):
             self.midi.send(NoteOn(tup[0], 0))
-            print ("noteOff on", tup[0]);
         self.noteQueue = [x for x in self.noteQueue if x not in noteOffs]
