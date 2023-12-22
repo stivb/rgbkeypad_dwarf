@@ -133,6 +133,10 @@ EAST=3
 SOUTH=6
 WEST=9
 
+flashCt=-1
+lastFlash=0
+flashMax=5
+
 logBuffer="Log start\n"
 
 colz = OrderedDict()
@@ -203,6 +207,7 @@ midi1 = adafruit_midi.MIDI(
     out_channel=9,
 )
 
+midi2 = adafruit_midi.MIDI(midi_out=usb_midi.ports[1], out_channel=10)
 
 
 note = 60
@@ -284,9 +289,7 @@ def num2binIndexes(num):
 #when in non-midilearn state, just switches off all loopsand fx
 #sets midi back to exclusive mode
 def resetCued(id, newState, lp):
-    global pedalBoardStateIdx
-    if newState==0:
-        midiReader.reset()
+    midiReader.reset()
 
 def resetPressed(id, newState, lp):
     global resetBtnMap
@@ -493,8 +496,28 @@ funcs = Functions()
 settings = Settings("keypadsettings.json",funcs,monitor)
 
 
+
+    
+
+
+def flash():
+    global flashCt,lastFlash,flashMax
+    if flashCt==-1: return
+    if (flashCt==0 or lastFlash-time.monotonic()>0.5):
+        if flashCt % 2 == 0:
+            for i in range(16): keys[i].led_off()
+        else:
+            for i in range(16): keys[i].led_on()
+        flashCt=flashCt+1
+        lastFlash=time.monotonic()
+        if flashCt==flashMax:
+            for i in range(16): keys[i].led_on()
+            flashCt=-1
+    
+
 def doLog(stri,log2guitar=True):
-    global monitor,logBuffer
+    global monitor,logBuffer,flashCt
+    if stri.startswith("*"): flashCt=0
     logBuffer+=stri + "\n"
     if log2guitar==False:
         print(stri)
@@ -528,10 +551,13 @@ while True:
 
     keybow.update()        
     for ctrl in Controlz:
-        #print(ctrl, Controlz[ctrl])
         Controlz[ctrl].check()
     noteBasher.tidyUp()
     
+    
+    
     if midiReader.on:
         midiReader.read(midi1.receive())
+    
+#     flash()
     

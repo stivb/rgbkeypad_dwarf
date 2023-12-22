@@ -6,7 +6,10 @@ from adafruit_midi.note_on import NoteOn
 import math
 
 
-class MidiReader:    
+class MidiReader:
+    
+# Currently it reads on channel 0 -
+# which means you have to set the output channel to 16 on the plugin cos of bug (23/12/23)   
     
     def __init__(self, midi, cb_notify,cb_doLog):      
         self.midi = midi
@@ -38,11 +41,13 @@ class MidiReader:
         
     
     def read(self,msg_in):
+        
+
         if time.monotonic()-self.startingAt >2:
             self.on=False
             self.cb_notify(self.numbers)
             self.cb_doLog(str(self.numbers))
-        
+  
         if msg_in is None:
             return
         
