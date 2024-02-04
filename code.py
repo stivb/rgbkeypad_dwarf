@@ -50,33 +50,34 @@
 #might try different mux however
 #########################################
 
-from dwarfmidiutils.statebtn import StateBtn
+# from dwarfmidiutils.statebtn import StateBtn
 from dwarfmidiutils.longstatebtn import LongStateBtn
 from dwarfmidiutils.drumbtn import DrumBtn
 from dwarfmidiutils.notebasher import NoteBasher
-from dwarfmidiutils.pot import Pot
-from dwarfmidiutils.footswitch import FootSwitch
-from dwarfmidiutils.ankeypad import AnKeyPad
-from dwarfmidiutils.joystick import JoyStick
+# from dwarfmidiutils.pot import Pot
+# from dwarfmidiutils.footswitch import FootSwitch
+# from dwarfmidiutils.ankeypad import AnKeyPad
+# from dwarfmidiutils.joystick import JoyStick
 from dwarfmidiutils.midireader import MidiReader
-from dwarfmidiutils.monitor import Monitor
-from dwarfmidiutils.settings import Settings
-from dwarfmidiutils.boardstates import BoardStates
+# from dwarfmidiutils.monitor import Monitor
+# from dwarfmidiutils.settings import Settings
+# from dwarfmidiutils.boardstates import BoardStates
 from dwarfmidiutils.statemap import *
-from dwarfmidiutils.pinswitch import PinSwitch
+# from dwarfmidiutils.pinswitch import PinSwitch
 
-import json
+# import json
 import board
-import busio
-
-import terminalio
-import displayio
-from adafruit_display_text import label, wrap_text_to_lines
-from adafruit_st7789 import ST7789
-from digitalio import DigitalInOut, Direction, Pull
+# import busio
+# 
+# import terminalio
+# import displayio
+# from adafruit_display_text import label, wrap_text_to_lines
+# from adafruit_st7789 import ST7789
+# from digitalio import DigitalInOut, Direction, Pull
+# from analogio import AnalogIn
 
 from adafruit_datetime import datetime
-from analogio import AnalogIn
+
 import time
 from pmk import PMK
 #from pmk.platform.keybow2040 import Keybow2040 as Hardware          # for Keybow 2040
@@ -91,6 +92,8 @@ from adafruit_midi.program_change import ProgramChange
 
 from collections import OrderedDict
 
+#useMidiMonitor=False
+
 # import os
 # logfile = open('log.txt', 'a')
 # os.dupterm(logfile)
@@ -99,14 +102,11 @@ from collections import OrderedDict
 
 keybow = PMK(Hardware())
 keys = keybow.keys
-
-drumNotesPlayed = []
-
-transmissionOn=True
-
+# drumNotesPlayed = []
+# transmissionOn=True
 debugging=True
-
-pedalBoardStateIdx=-1
+# pedalBoardStateIdx=-1
+drumMidiOffset = 0
 
 #spi = busio.SPI(clock=board.GP10, MOSI=board.GP11)
 #cs = digitalio.DigitalInOut(board.GP13)
@@ -124,20 +124,20 @@ pedalBoardStateIdx=-1
 
 #setting up constants
 
-MIDI_MODE_EXCL=0
-MIDI_MODE_YOKED=1
-MIDI_MODE_LEARN=2
+# MIDI_MODE_EXCL=0
+# MIDI_MODE_YOKED=1
+# MIDI_MODE_LEARN=2
 
-NORTH=0
-EAST=3
-SOUTH=6
-WEST=9
+# NORTH=0
+# EAST=3
+# SOUTH=6
+# WEST=9
 
-flashCt=-1
-lastFlash=0
-flashMax=5
+# flashCt=-1
+# lastFlash=0
+# flashMax=5
 
-logBuffer="Log start\n"
+# logBuffer="Log start\n"
 
 colz = OrderedDict()
 colz["BLACK"] = (0,0,0)
@@ -153,49 +153,49 @@ colz["PINK"]=(255,128,128)
 colz["WHITE"]=(255,255,255)
 
 
-gCurrMidiMode=MIDI_MODE_EXCL
+# gCurrMidiMode=MIDI_MODE_EXCL
 
       
-class Functions:
-    
-    def __init__(self):
-        self.callCount=0
-        self.allowed_funcs =  {"self.SettingsChooseChannel": self.SettingsChooseChannel,
-                         "self.SettingsGoBoardSnapshot":self.SettingsGoBoardSnapshot,
-                         "self.SettingsSendCCNumVal":self.SettingsSendCCNumVal,
-                         "self.SettingsBpm":self.SettingsBpm,
-                         "self.SettingsBpb":self.SettingsBpb,
-                         "self.SettingsSetBoardChannel":self.SettingsSetBoardChannel,
-                         "self.SettingsSetSnapshotChannel":self.SettingsSetSnapshotChannel
-                         } 
-        
-        
-    def run_func(self, input_string):
-        print(input_string)
-        eval(input_string, {"self": self})
-
-    
-    def SettingsChooseChannel(self, iput):
-        print("Not Yet Implemented", iput)
-        
-    def SettingsGoBoardSnapshot(self, iput):
-        print("Not Yet Implemented", iput)
-        
-    def SettingsSendCCNumVal(self, iput):
-        print("Not Yet Implemented", iput)
-        
-    def SettingsBpm(self, iput):
-        print("Not Yet Implemented", iput)
-        
-    def SettingsBpb(self, iput):
-        print("Not Yet Implemented", iput)
-        
-    def SettingsSetBoardChannel(self, iput):
-        print("Not Yet Implemented", iput)
-        
-    def SettingsSetSnapshotChannel(self, iput):
-        print("Not Yet Implemented", iput)
-        
+# class Functions:
+#     
+#     def __init__(self):
+#         self.callCount=0
+#         self.allowed_funcs =  {"self.SettingsChooseChannel": self.SettingsChooseChannel,
+#                          "self.SettingsGoBoardSnapshot":self.SettingsGoBoardSnapshot,
+#                          "self.SettingsSendCCNumVal":self.SettingsSendCCNumVal,
+#                          "self.SettingsBpm":self.SettingsBpm,
+#                          "self.SettingsBpb":self.SettingsBpb,
+#                          "self.SettingsSetBoardChannel":self.SettingsSetBoardChannel,
+#                          "self.SettingsSetSnapshotChannel":self.SettingsSetSnapshotChannel
+#                          } 
+#         
+#         
+#     def run_func(self, input_string):
+#         print(input_string)
+#         eval(input_string, {"self": self})
+# 
+#     
+#     def SettingsChooseChannel(self, iput):
+#         print("Not Yet Implemented", iput)
+#         
+#     def SettingsGoBoardSnapshot(self, iput):
+#         print("Not Yet Implemented", iput)
+#         
+#     def SettingsSendCCNumVal(self, iput):
+#         print("Not Yet Implemented", iput)
+#         
+#     def SettingsBpm(self, iput):
+#         print("Not Yet Implemented", iput)
+#         
+#     def SettingsBpb(self, iput):
+#         print("Not Yet Implemented", iput)
+#         
+#     def SettingsSetBoardChannel(self, iput):
+#         print("Not Yet Implemented", iput)
+#         
+#     def SettingsSetSnapshotChannel(self, iput):
+#         print("Not Yet Implemented", iput)
+#         
      
 
 #SET UP MIDI CHANNELS TO USE
@@ -207,92 +207,94 @@ midi1 = adafruit_midi.MIDI(
     out_channel=9,
 )
 
-midi2 = adafruit_midi.MIDI(midi_out=usb_midi.ports[1], out_channel=10)
+# midi2 = adafruit_midi.MIDI(midi_out=usb_midi.ports[1], out_channel=10)
 
-
-note = 60
-velocity = 127
+# 
+# note = 60
+# velocity = 127
 
     
-def joyStickAction(degreeV,degreeH,actioned):
-    global settings 
-    #settings.handleJoyStick(degreeV,degreeH,actioned)
+# def joyStickAction(degreeV,degreeH,actioned):
+#     global settings 
+#     #settings.handleJoyStick(degreeV,degreeH,actioned)
                 
                    
-def doNotesOff():
-    global drumNotesPlayed
-    global Controlz
-    currTime = time.monotonic()
-    #print(len(drumNotesPlayed))
-    for i in range(len(drumNotesPlayed)):
-        thisEvtSrc = drumNotesPlayed[i]
-        if currTime-thisEvtSrc["when"] > 0.1:
-            Controlz[thisEvtSrc["ctrlId"]].noteOff()
-            print ("Note off", thisEvtSrc["ctrlId"])
-            del drumNotesPlayed[i]
+# def doNotesOff():
+#     global drumNotesPlayed
+#     global Controlz
+#     currTime = time.monotonic()
+#     #print(len(drumNotesPlayed))
+#     for i in range(len(drumNotesPlayed)):
+#         thisEvtSrc = drumNotesPlayed[i]
+#         if currTime-thisEvtSrc["when"] > 0.1:
+#             Controlz[thisEvtSrc["ctrlId"]].noteOff()
+#             print ("Note off", thisEvtSrc["ctrlId"])
+#             del drumNotesPlayed[i]
             
  
 def fxBtnPressed(id, state, lp): #turning off all the other fx but not the one just turned on
     global fxkeys,ks
-    print(id, "is id of button just pressed in state ", state," with long press? ", lp, "with the other keys being ", fxkeys)
+#     print(id, "is id of button just pressed in state ", state," with long press? ", lp, "with the other keys being ", fxkeys)
     for fxkey in fxkeys:
-        print("currently the fxkey ", fxkey," has the state ",Controlz[fxkey].getState())
+#         print("currently the fxkey ", fxkey," has the state ",Controlz[fxkey].getState())
         if fxkey!=id and state==1:
             Controlz[fxkey].setState(0)
 
-def pinPressed(id):
-    global pedalBoardStateIdx
-    print("pin pressed :", id)
-    pinValDict = {19:1,18:2,17:3,16:0}
-    pedalBoardStateIdx = pinValDict[id]
-    enactBoardStateChange()
-    
-    
-def footPedalPressed(id, state):
-    global debugging
-    if debugging: print(id,state)
-    
-def potMoved(id,state):
-    global debugging
-    if debugging: print(id,state)
-    
-def barsPressed(id, state):
-    global debugging
-    if debugging: print(id,state)
+# def pinPressed(id):
+#     global pedalBoardStateIdx
+#     print("pin pressed :", id)
+#     pinValDict = {19:1,18:2,17:3,16:0}
+#     pedalBoardStateIdx = pinValDict[id]
+#     enactBoardStateChange()
+#     
+#     
+# def footPedalPressed(id, state):
+#     global debugging
+#     if debugging: print(id,state)
+#     
+# def potMoved(id,state):
+#     global debugging
+#     if debugging: print(id,state)
+#     
+# def barsPressed(id, state):
+#     global debugging
+#     if debugging: print(id,state)
     
 
 
 
-def indicate(num):
-    global ks
-    global monitor
-    ct=0
-    monitor.printout(False,str(num))
+# def indicate(num):
+#     global ks
+#     global monitor
+#     ct=0
+#     monitor.printout(False,str(num))
     
     
     
-def num2binIndexes(num):
-    #converting to binary and removing the first two "0b" characters
-    global loopkeys
-    q= list(bin(num)[2:])
-    #if not six characters long, adding in zeros
-    while (len(q)<6): q.insert(0, '0')
-    #converting to array of numbers from string
-    onoffs = [eval(i) for i in q]
-    #just getting the ones which are on
-    onsIndexes =  [i for i in range(len(onoffs)) if onoffs[i] > 0]
-    #mapping them to the actual keys
-    return [loopkeys[i] for i in onsIndexes]
+# def num2binIndexes(num):
+#     #converting to binary and removing the first two "0b" characters
+#     global loopkeys
+#     q= list(bin(num)[2:])
+#     #if not six characters long, adding in zeros
+#     while (len(q)<6): q.insert(0, '0')
+#     #converting to array of numbers from string
+#     onoffs = [eval(i) for i in q]
+#     #just getting the ones which are on
+#     onsIndexes =  [i for i in range(len(onoffs)) if onoffs[i] > 0]
+#     #mapping them to the actual keys
+#     return [loopkeys[i] for i in onsIndexes]
     
     
 #reset - the toggling of volume and loop handled by midilearn
 #when in non-midilearn state, just switches off all loopsand fx
 #sets midi back to exclusive mode
 def resetCued(id, newState, lp):
-    midiReader.reset()
+#     if useMidiMonitor: midiReader.reset()
+    print("Reset cued")
 
 def resetPressed(id, newState, lp):
     global resetBtnMap
+    global drumMidiOffset
     if newState==0:    
         for loopkey in loopkeys:
             Controlz[loopkey].setState(0)
@@ -301,59 +303,65 @@ def resetPressed(id, newState, lp):
             Controlz[fxkey].setState(0)
     #hack here, just turning the fader off
         midi1.send(ControlChange(61,96))
+        Controlz[exkeys[0]].setState(0)
+        drumMidiOffset=0
+        
 
 
 def drumPadPressed(id, value):
-    global debugging
+#     global debugging
     global noteBasher
-    if debugging: doLog(str(id) + " " + str(value), True)
-    noteBasher.noteOn(value)
+    global drumMidiOffset
+#     if debugging: doLog(str(id) + " " + str(value), True)
+    noteBasher.noteOn(value + drumMidiOffset)
     
-def pagerPressed(id, value):
-    global debugging
-    global settings
-    if debugging: print(id, value)
-    if value==2:
-        settings.prevItem()
-    if value==4:
-        settings.nextItem()
-    if value==1:
-        settings.decrementCurrItem()
-    if value==3:
-        settings.incrementCurrItem()
-    if value==0:
-        settings.enactState()
-        
-def boardStatePressed(id, state, longpress):
-    if longpress:
-        print("long press")
-    enactBoardStateChange()
-        
-def enactBoardStateChange():
-    print("BOARD STATE CHANGE CALLED")
-    currBoardState = boardCapture()
-    nextBoardState = boardStates.nextState()
-    if nextBoardState==None:
-        return
-    currBoardLoops = set(currBoardState)
-    nextBoardLoops = set(nextBoardState)
-    turnOffs = currBoardLoops-nextBoardLoops
-    turnOns = nextBoardLoops-currBoardLoops
-    
-    
-    for turnOff in turnOffs:
-        Controlz[turnOff].press(False)
-    for turnOn in turnOns:
-        Controlz[turnOn].press(False)
-
-        
-def songSelectionPressed(id, state, longpress):
-    print("Song chosen")
-    
-def boardCapture():
-    global loopKeys
-    activeLoops = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), loopkeys))
-    return activeLoops
+# def pagerPressed(id, value):
+#     global debugging
+#     global settings
+#     if debugging: print(id, value)
+#     if value==2:
+#         settings.prevItem()
+#     if value==4:
+#         settings.nextItem()
+#     if value==1:
+#         settings.decrementCurrItem()
+#     if value==3:
+#         settings.incrementCurrItem()
+#     if value==0:
+#         settings.enactState()
+#         
+# def boardStatePressed(id, state, longpress):
+#     return
+#     if longpress:
+#         print("long press")
+#     enactBoardStateChange()
+#         
+# def enactBoardStateChange():
+#     return
+#     print("BOARD STATE CHANGE CALLED")
+#     currBoardState = boardCapture()
+#     nextBoardState = boardStates.nextState()
+#     if nextBoardState==None:
+#         return
+#     currBoardLoops = set(currBoardState)
+#     nextBoardLoops = set(nextBoardState)
+#     turnOffs = currBoardLoops-nextBoardLoops
+#     turnOns = nextBoardLoops-currBoardLoops
+#     
+#     
+#     for turnOff in turnOffs:
+#         Controlz[turnOff].press(False)
+#     for turnOn in turnOns:
+#         Controlz[turnOn].press(False)
+# 
+#         
+# def songSelectionPressed(id, state, longpress):
+#     print("Song chosen")
+#     
+# def boardCapture():
+#     global loopKeys
+#     activeLoops = list(filter((lambda keyNum: Controlz[keyNum].getState()!=0), loopkeys))
+#     return activeLoops
 
 
 
@@ -383,10 +391,10 @@ drumkeys = [ks["Drum1"],ks["Drum2"],ks["Drum3"],ks["Drum4"]]
 loopkeys  = [ks["Loop1"],ks["Loop2"],ks["Loop3"],ks["Loop4"],ks["Loop5"],ks["Loop6"]]
 fxkeys = [ks["Fx1"],ks["Fx2"],ks["Fx3"],ks["Fx4"]]
 exkeys = [ks["Ex1"],ks["Ex2"]]
-loopFxTethers = {ks["Loop2"]:ks["Fx1"],ks["Loop3"]:ks["Fx2"],ks["Loop4"]:ks["Fx3"],ks["Loop5"]:ks["Fx4"]}
+#loopFxTethers = {ks["Loop2"]:ks["Fx1"],ks["Loop3"]:ks["Fx2"],ks["Loop4"]:ks["Fx3"],ks["Loop5"]:ks["Fx4"]}
 
 
-print ("loop keys ", loopkeys, " fx keys:", fxkeys)
+#print ("loop keys ", loopkeys, " fx keys:", fxkeys)
 
 #footPedalPins = [board.GP20,board.GP21]
 #analoguePins = [board.A0,board.A1]
@@ -421,12 +429,11 @@ for keynum in loopkeys:
                                ])
     Controlz[keynum]=LongStateBtn(keynum, keys[keynum], midi1,loopKeyStateMap, None, None)
     ct=ct+1
-    print(keynum)
 
 
 #button to either navigate between boardStates or to save a current boardState
 
-boardStatesBtnMap = StateMap(
+drumModeMap = StateMap(
                             [StateMapItem("Board1", colz["WHITE"], None, None),
                              StateMapItem("Board2", colz["RED"], None, None),
                              StateMapItem("Board3", colz["YELLOW"], None, None),
@@ -434,13 +441,15 @@ boardStatesBtnMap = StateMap(
                              ]
                             )
 
+def drumModePressed(id, state, longpress):
+    global drumMidiOffset
+    if not longpress:
+        drumMidiOffset = state*4
 
 
+Controlz[exkeys[0]] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, drumModeMap, None, drumModePressed)
 
-
-Controlz[exkeys[0]] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, boardStatesBtnMap, None, boardStatePressed)
-
-songSelectionBtnMap =  StateMap([StateMapItem("Song", x, None, None) for i,x in enumerate(list(colz.values()))])
+# songSelectionBtnMap =  StateMap([StateMapItem("Song", x, None, None) for i,x in enumerate(list(colz.values()))])
 
 
 resetBtnMap =        StateMap([StateMapItem("Off", colz["WHITE"], 60, 1 ),
@@ -461,7 +470,7 @@ Controlz[exkeys[1]] = LongStateBtn(exkeys[1], keys[exkeys[1]], midi1, resetBtnMa
 #     Controlz[ctrlCt] = Pot(midi1, ctrlCt, aPin, potMoved)
 #     ctrlCt+=1
 
-ct=16
+# ct=16
 #pinz = [board.GP7, board.GP6, board.GP2, board.GP1]
 # pinz = [board.GP0, board.GP2, board.GP6, board.GP7]
 # for pin in pinz:
@@ -471,9 +480,9 @@ ct=16
 
 
 
-print("ct is now ",ct)    
-drumPad = AnKeyPad(midi1, ct, board.A2, drumPadPressed)
-Controlz[ct] = drumPad
+# print("ct is now ",ct)    
+# drumPad = AnKeyPad(midi1, ct, board.A2, drumPadPressed)
+# Controlz[ct] = drumPad
 #ct+=1
 #pagerPad = AnKeyPad(midi1, ctrlCt, board.A1, pagerPressed)
 
@@ -481,70 +490,81 @@ Controlz[ct] = drumPad
 
 # joyController = JoyStick(midi1,ct, board.A1, board.A0, board.GP22, joyStickAction)
 # Controlz[ct] = joyController
+#
+# if useMidiMonitor:
+#     displayio.release_displays()
+#     tft_cs = board.GP13
+#     tft_dc = board.GP12
+#     spi_mosi = board.GP11
+#     spi_clk = board.GP10
+#     spi = busio.SPI(spi_clk, spi_mosi)
+#     display_bus = displayio.FourWire(spi, command=tft_dc, chip_select=tft_cs)
+#     display = ST7789(display_bus, width=240, height=240, rowstart=80, rotation=90)
+#     monitor = Monitor(display)
+#     funcs = Functions()
+#     settings = Settings("keypadsettings.json",funcs,monitor)
+
+
+
+    
+
+
+# def flash():
+#     global flashCt,lastFlash,flashMax
+#     if flashCt==-1: return
+#     if (flashCt==0 or lastFlash-time.monotonic()>0.5):
+#         if flashCt % 2 == 0:
+#             for i in range(16): keys[i].led_off()
+#         else:
+#             for i in range(16): keys[i].led_on()
+#         flashCt=flashCt+1
+#         lastFlash=time.monotonic()
+#         if flashCt==flashMax:
+#             for i in range(16): keys[i].led_on()
+#             flashCt=-1
+#     
 # 
-displayio.release_displays()
-tft_cs = board.GP13
-tft_dc = board.GP12
-spi_mosi = board.GP11
-spi_clk = board.GP10
-spi = busio.SPI(spi_clk, spi_mosi)
-display_bus = displayio.FourWire(spi, command=tft_dc, chip_select=tft_cs)
-display = ST7789(display_bus, width=240, height=240, rowstart=80, rotation=90)
-monitor = Monitor(display)
-funcs = Functions()
-
-settings = Settings("keypadsettings.json",funcs,monitor)
-
-
-
-    
-
-
-def flash():
-    global flashCt,lastFlash,flashMax
-    if flashCt==-1: return
-    if (flashCt==0 or lastFlash-time.monotonic()>0.5):
-        if flashCt % 2 == 0:
-            for i in range(16): keys[i].led_off()
-        else:
-            for i in range(16): keys[i].led_on()
-        flashCt=flashCt+1
-        lastFlash=time.monotonic()
-        if flashCt==flashMax:
-            for i in range(16): keys[i].led_on()
-            flashCt=-1
-    
-
-def doLog(stri,log2guitar=True):
-    global monitor,logBuffer,flashCt
-    if stri.startswith("*"): flashCt=0
-    logBuffer+=stri + "\n"
-    if log2guitar==False:
-        print(stri)
-    else:
-        print("Should go to guitar monitor")
-        monitor.printout(False,stri)
+# def doLog(stri,log2guitar=True):
+#     if not useMidiMonitor: return
+#     try:
+#         global monitor,logBuffer,flashCt
+#         if stri.startswith("*"): flashCt=0
+#         logBuffer+=stri + "\n"
+#         if log2guitar==False:
+#             print(stri)
+#         else:
+#             print("Should go to guitar monitor")
+#             monitor.printout(False,stri)
+#     except:
+#         print("Error made in doLog")
         
-boardStates = BoardStates(doLog)
+#boardStates = BoardStates(doLog)
 
-def notificationMade(numbers):
-    boardStates.clearStates()
-    if (len(numbers)==0): return
-    if all(val is None for val in numbers): return
-    doLog("THERE WILL BE " + str(len(numbers)) + " STATES IN THIS SONG ", True)
-    for idx, x in enumerate(numbers):
-        boardStates.setState(num2binIndexes(x), idx)
+#this is a function to be sent from the midireader on reception of a set of notes setting the board states
+# def notificationMade(numbers):
+#     #if not useMidiMonitor: return
+#     if (len(numbers)==0): return
+#     try:
+#         boardStates.clearStates()
+#         if all(val is None for val in numbers): return
+#         doLog("THERE WILL BE " + str(len(numbers)) + " STATES IN THIS SONG ", True)
+#         for idx, x in enumerate(numbers):
+#             boardStates.setState(num2binIndexes(x), idx)
+#     except:
+#         print("An error occurred")
     
-#notificationMade([40,44,46,47])
+
 
 noteBasher = NoteBasher(midi1, 100, .1)
-midiReader = MidiReader(midi1, notificationMade, doLog)
+#notificationMade([48,56,60,62])
 
-#midiReader.simulate()
+# if useMidiMonitor:
+#     midiReader = MidiReader(midi1, notificationMade, doLog)
 
 
-def get_voltg(raw):
-    return (raw * 3.3) / 65536
+
+# def get_voltg(raw):
+#     return (raw * 3.3) / 65536
 
 while True:
     
@@ -556,8 +576,8 @@ while True:
     
     
     
-    if midiReader.on:
-        midiReader.read(midi1.receive())
+#     if useMidiMonitor and midiReader.on:
+#         midiReader.read(midi1.receive())
     
-#     flash()
+
     

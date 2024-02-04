@@ -10,7 +10,7 @@ class BoardStates:
         
     def setState(self, loopsOnArr, idx):        
         self.states[idx] = loopsOnArr
-        self.cb_doLog(str(loopsOnArr))
+        self.cb_doLog("The current loopsOnArr is " + str(loopsOnArr))
         
     def nextState(self):
         """

@@ -18,7 +18,7 @@ class MidiReader:
         self.numbers = []
         self.cb_notify=cb_notify
         self.cb_doLog=cb_doLog
-        print("Reading from ", self.midi.in_channel)
+        print("Reading from midi channel: ", self.midi.in_channel)
         
     
     def simulate(self):
@@ -38,15 +38,16 @@ class MidiReader:
         self.on=True
         self.startingAt = time.monotonic()
         self.numbers = []
-        
-    
+
     def read(self,msg_in):
         
-
+        
+        #after two seconds following initiation
         if time.monotonic()-self.startingAt >2:
             self.on=False
-            self.cb_notify(self.numbers)
-            self.cb_doLog(str(self.numbers))
+            if (len(self.numbers)>0):
+                self.cb_notify(self.numbers)
+                self.cb_doLog("In midireader: self.numbers is :" + str(self.numbers))
   
         if msg_in is None:
             return
@@ -55,5 +56,3 @@ class MidiReader:
             self.cb_doLog("*HERE IS A NOTE " + str(msg_in.note))
             self.numbers.append(msg_in.note)
                  
-             
-             
