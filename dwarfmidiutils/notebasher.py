@@ -4,7 +4,7 @@ from adafruit_midi.note_on import NoteOn
 
 class NoteBasher:
     
-    def __init__(self, midi, defVelocity=100, defDuration=.5):
+    def __init__(self, midi, defVelocity=100, defDuration=.25):
         self.noteQueue=[]
         self.midi = midi
         self.duration=defDuration

@@ -3,6 +3,7 @@ from dwarfmidiutils.drumbtn import DrumBtn
 from dwarfmidiutils.notebasher import NoteBasher
 
 from dwarfmidiutils.midireader import MidiReader
+from dwarfmidiutils.song import Song
 
 from dwarfmidiutils.statemap import *
 
@@ -51,6 +52,8 @@ midi1 = adafruit_midi.MIDI(
     out_channel=9,
 )
 
+song = Song(midi1, 100)
+
 def fxBtnPressed(id, state, lp): 
     global fxkeys,ks
 
@@ -59,11 +62,13 @@ def fxBtnPressed(id, state, lp):
             Controlz[fxkey].setState(0)
 
 def resetCued(id, newState, lp):
-    print("Reset cued")
+    global song
+    song.stop()
 
 def resetPressed(id, newState, lp):
     global resetBtnMap
     global drumMidiOffset
+    global song
     if newState==0:    
         for loopkey in loopkeys:
             Controlz[loopkey].setState(0)
@@ -74,6 +79,7 @@ def resetPressed(id, newState, lp):
         midi1.send(ControlChange(61,96))
         Controlz[exkeys[0]].setState(0)
         drumMidiOffset=0
+        song.stop()
 
 def drumPadPressed(id, value):
     global noteBasher
@@ -129,20 +135,33 @@ for keynum in loopkeys:
     Controlz[keynum]=LongStateBtn(keynum, keys[keynum], midi1,loopKeyStateMap, None, None)
     ct=ct+1
 
-drumModeMap = StateMap(
+songStateMap = StateMap(
                             [StateMapItem("Board1", colz["WHITE"], None, None),
-                             StateMapItem("Board2", colz["RED"], None, None),
-                             StateMapItem("Board3", colz["YELLOW"], None, None),
-                             StateMapItem("Board4", colz["GREEN"], None, None)
+                             StateMapItem("Board2", colz["RED"], None, None)
                              ]
                             )
 
-def drumModePressed(id, state, longpress):
+def songPressed(id, state, longpress):
+    # this short press should cause #127 noteOn
+    # and a cc #127 high
+    # the fadeout should do #127 noteOff
+    # and a cc #127 low
+    global resetBtnMap
     global drumMidiOffset
-    if not longpress:
-        drumMidiOffset = state*4
+    print("_________________")
+    print(resetBtnMap.currCol)
+    
+    if song.on:
+        song.stop()
+        drumMidiOffset=0
+    else:
+        song.start()
+        drumMidiOffset=4
+        
 
-Controlz[exkeys[0]] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, drumModeMap, None, drumModePressed)
+
+# nId, btn, adaMidi,stateMap, preCmdCallBack, postCmdCallBack):
+Controlz[exkeys[0]] = LongStateBtn(exkeys[0], keys[exkeys[0]], None, songStateMap, None, songPressed)
 
 resetBtnMap =        StateMap([StateMapItem("Off", colz["WHITE"], 60, 1 ),
                      StateMapItem("Playing", colz["GREEN"], 60, 96 ),
@@ -158,4 +177,6 @@ while True:
     for ctrl in Controlz:
         Controlz[ctrl].check()
     noteBasher.tidyUp()
+
+
 
